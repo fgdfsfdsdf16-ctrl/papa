@@ -1,22 +1,131 @@
-<<!DOCTYPE html>
-<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
-<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
-<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
-<!--[if gt IE 8]>      <html class="no-js"> <!--<![endif]-->
-<html>
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title></title>
-        <meta name="description" content="">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="">
-    </head>
-    <body>
-        <!--[if lt IE 7]>
-            <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
-        <![endif]-->
-        
-        <script src="" async defer></script>
-    </body>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Gourmet</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        header {
+            background: #111;
+            color: white;
+            padding: 20px;
+            position: fixed;
+            width: 100%;
+            top: 0;
+        }
+
+        nav a {
+            color: white;
+            margin: 0 15px;
+            text-decoration: none;
+        }
+
+        section {
+            padding: 100px 20px;
+            min-height: 100vh;
+        }
+
+        .hero {
+            background: url('https://images.unsplash.com/photo-1555992336-03a23c2a8c36') center/cover;
+            color: white;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .chef, .plats, .contact {
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        .plats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        footer {
+            background: #111;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <nav>
+        <a href="#home">Accueil</a>
+        <a href="#chef">Le Chef</a>
+        <a href="#plats">Nos Plats</a>
+        <a href="#contact">Contact</a>
+    </nav>
+</header>
+
+<section id="home" class="hero">
+    <h1>Bienvenue dans notre restaurant</h1>
+    <p>Une expérience gastronomique unique</p>
+</section>
+
+<section id="chef">
+    <div class="chef">
+        <h2>Présentation du Chef</h2>
+        <p>Notre chef est passionné par la cuisine depuis plus de 20 ans. Il mélange tradition et modernité pour créer des plats uniques.</p>
+        <p>Formé dans les plus grandes écoles culinaires, il apporte une touche artistique à chaque assiette.</p>
+    </div>
+</section>
+
+<section id="plats">
+    <div class="plats">
+        <h2>Présentation des Plats</h2>
+        <div class="plats-grid">
+            <div class="card">
+                <h3>Plat 1</h3>
+                <p>Description du plat délicieux avec des ingrédients frais.</p>
+            </div>
+            <div class="card">
+                <h3>Plat 2</h3>
+                <p>Un mélange parfait de saveurs et de textures.</p>
+            </div>
+            <div class="card">
+                <h3>Plat 3</h3>
+                <p>Une spécialité du chef à ne pas manquer.</p>
+            </div>
+            <div class="card">
+                <h3>Plat 4</h3>
+                <p>Une explosion de goûts en bouche.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="contact">
+    <div class="contact">
+        <h2>Contact</h2>
+        <p>Email : contact@restaurant.com</p>
+        <p>Téléphone : 01 23 45 67 89</p>
+        <p>Adresse : 123 Rue de la Gastronomie</p>
+    </div>
+</section>
+
+<footer>
+    <p>© 2026 Restaurant Gourmet</p>
+</footer>
+
+</body>
 </html>
