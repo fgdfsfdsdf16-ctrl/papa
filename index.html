@@ -1,1328 +1,1024 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>La Maison du Chef</title>
-
-  <!-- ===================================================
-       POLICES GOOGLE FONTS
-       - Playfair Display : titres élégants du restaurant
-       - Lato : texte courant lisible
-  =================================================== -->
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
-
-  <style>
-    /* ===================================================
-       VARIABLES CSS GLOBALES
-       Modifiez ici les couleurs et polices du site entier
-    =================================================== */
-    :root {
-      --couleur-fond:       #0f0e0b;      /* Fond général très sombre */
-      --couleur-surface:    #1a1814;      /* Fond des cartes et sections */
-      --couleur-or:         #c9a84c;      /* Or chaud – couleur principale */
-      --couleur-or-clair:   #e8cc7a;      /* Or clair pour hovers */
-      --couleur-texte:      #f0ead8;      /* Texte principal crème */
-      --couleur-texte-dim:  #9a9282;      /* Texte secondaire grisé */
-      --couleur-rouge:      #c0392b;      /* Rouge alerte / supprimer */
-      --police-titre:       'Playfair Display', serif;
-      --police-corps:       'Lato', sans-serif;
-      --rayon:              12px;         /* Rayon d'arrondi des cartes */
-      --ombre:              0 8px 32px rgba(0,0,0,0.5); /* Ombre portée */
-    }
-
-    /* ===================================================
-       RESET & BASE
-       Supprime les marges par défaut du navigateur
-    =================================================== */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: var(--police-corps);
-      background: var(--couleur-fond);
-      color: var(--couleur-texte);
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    /* ===================================================
-       BARRE DE NAVIGATION
-       Fixée en haut – contient logo + liens + panier
-    =================================================== */
-    nav {
-      position: fixed;           /* Reste en haut même en scrollant */
-      top: 0; left: 0; right: 0;
-      z-index: 1000;             /* Au-dessus de tout le contenu */
-      background: rgba(15,14,11,0.92);
-      backdrop-filter: blur(12px); /* Flou derrière la barre */
-      border-bottom: 1px solid rgba(201,168,76,0.2);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 2rem;
-      height: 68px;
-    }
-
-    /* Nom du restaurant dans la nav */
-    .nav-logo {
-      font-family: var(--police-titre);
-      font-size: 1.4rem;
-      color: var(--couleur-or);
-      letter-spacing: 0.05em;
-      cursor: pointer;
-    }
-
-    /* Liens HOME / CARTE / CONTACT */
-    .nav-links {
-      display: flex;
-      gap: 2.5rem;
-      list-style: none;
-    }
-
-    .nav-links a {
-      color: var(--couleur-texte-dim);
-      text-decoration: none;
-      font-size: 0.85rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      font-weight: 700;
-      transition: color 0.2s;
-      cursor: pointer;
-    }
-
-    /* Lien actif / survolé */
-    .nav-links a:hover,
-    .nav-links a.active { color: var(--couleur-or); }
-
-    /* Bouton panier en haut à droite */
-    .cart-btn {
-      position: relative;
-      background: none;
-      border: 1px solid var(--couleur-or);
-      color: var(--couleur-or);
-      padding: 0.5rem 1.1rem;
-      border-radius: 50px;
-      cursor: pointer;
-      font-size: 1rem;
-      transition: background 0.2s, color 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      font-family: var(--police-corps);
-    }
-
-    .cart-btn:hover {
-      background: var(--couleur-or);
-      color: var(--couleur-fond);
-    }
-
-    /* Badge rouge avec le nombre d'articles dans le panier */
-    .cart-badge {
-      position: absolute;
-      top: -6px; right: -6px;
-      background: var(--couleur-rouge);
-      color: #fff;
-      font-size: 0.65rem;
-      font-weight: 700;
-      width: 18px; height: 18px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      /* Masqué si panier vide */
-    }
-
-    /* ===================================================
-       PAGES (sections)
-       Chaque page est une section pleine hauteur
-       On cache tout sauf la page active
-    =================================================== */
-    .page {
-      display: none;           /* Cachée par défaut */
-      padding-top: 68px;       /* Espace pour la nav fixe */
-      min-height: 100vh;
-    }
-
-    .page.active { display: block; } /* Affichée si active */
-
-    /* ===================================================
-       PAGE HOME – HÉRO
-       Grande bannière avec présentation du chef
-    =================================================== */
-    .hero {
-      min-height: calc(100vh - 68px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      overflow: hidden;
-    }
-
-    /* Texture de fond dorée en arrière-plan */
-    .hero::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(ellipse 80% 60% at 60% 50%, rgba(201,168,76,0.08) 0%, transparent 70%),
-        radial-gradient(ellipse 40% 40% at 20% 80%, rgba(201,168,76,0.05) 0%, transparent 60%);
-    }
-
-    .hero-content {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      align-items: center;
-      gap: 5rem;
-      max-width: 1100px;
-      width: 100%;
-      padding: 3rem 2rem;
-    }
-
-    /* ---------------------------------------------------
-       ZONE PHOTO DU CHEF
-       Remplacez l'image par votre photo dans img src=""
-    --------------------------------------------------- */
-    .chef-photo-wrap {
-      flex-shrink: 0;
-      position: relative;
-    }
-
-    /* Cadre décoratif doré autour de la photo */
-    .chef-photo-wrap::before {
-      content: '';
-      position: absolute;
-      top: -12px; left: -12px;
-      right: 12px; bottom: 12px;
-      border: 2px solid var(--couleur-or);
-      border-radius: var(--rayon);
-      opacity: 0.5;
-    }
-
-    .chef-photo {
-      width: 320px;
-      height: 420px;
-      object-fit: cover;          /* Recadre l'image pour remplir le cadre */
-      border-radius: var(--rayon);
-      display: block;
-      background: var(--couleur-surface); /* Fond si pas d'image */
-      /* ↓ REMPLACEZ src="" par le chemin de votre photo */
-    }
-
-    /* Placeholder si pas d'image – icône chef */
-    .chef-placeholder {
-      width: 320px;
-      height: 420px;
-      background: var(--couleur-surface);
-      border-radius: var(--rayon);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 1rem;
-      border: 2px dashed rgba(201,168,76,0.3);
-      color: var(--couleur-texte-dim);
-      font-size: 0.85rem;
-      text-align: center;
-    }
-
-    .chef-placeholder .icon { font-size: 4rem; }
-
-    /* ---------------------------------------------------
-       TEXTE DE PRÉSENTATION DU CHEF (à droite)
-    --------------------------------------------------- */
-    .hero-text { flex: 1; }
-
-    /* Petit label au-dessus du titre */
-    .hero-label {
-      font-size: 0.75rem;
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-      color: var(--couleur-or);
-      margin-bottom: 1rem;
-    }
-
-    /* NOM DU RESTAURANT – grand titre principal */
-    .hero-title {
-      font-family: var(--police-titre);
-      font-size: clamp(2.5rem, 5vw, 4rem); /* Taille responsive */
-      line-height: 1.1;
-      color: var(--couleur-texte);
-      margin-bottom: 1.5rem;
-    }
-
-    .hero-title em {
-      color: var(--couleur-or);
-      font-style: italic;
-    }
-
-    /* Séparateur doré sous le titre */
-    .divider {
-      width: 60px;
-      height: 2px;
-      background: var(--couleur-or);
-      margin-bottom: 1.5rem;
-    }
-
-    /* Texte de présentation du chef */
-    .hero-desc {
-      color: var(--couleur-texte-dim);
-      line-height: 1.8;
-      font-size: 1rem;
-      max-width: 480px;
-      margin-bottom: 1.5rem;
-    }
-
-    /* NOM DU CHEF affiché en signature */
-    .chef-name {
-      font-family: var(--police-titre);
-      font-size: 1.3rem;
-      color: var(--couleur-or);
-      font-style: italic;
-    }
-
-    /* ===================================================
-       PAGE CARTE – GRILLE DE PLATS
-    =================================================== */
-    .carte-section {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 3rem 2rem;
-    }
-
-    /* Titre de section centré */
-    .section-title {
-      font-family: var(--police-titre);
-      font-size: 2.2rem;
-      color: var(--couleur-texte);
-      text-align: center;
-      margin-bottom: 0.5rem;
-    }
-
-    .section-subtitle {
-      text-align: center;
-      color: var(--couleur-texte-dim);
-      font-size: 0.9rem;
-      letter-spacing: 0.1em;
-      margin-bottom: 3rem;
-    }
-
-    /* Grille responsive : 3 colonnes sur grand écran */
-    .dishes-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 1.5rem;
-    }
-
-    /* ---------------------------------------------------
-       CARTE D'UN PLAT
-       Cliquer dessus ouvre le panneau de détail
-    --------------------------------------------------- */
-    .dish-card {
-      background: var(--couleur-surface);
-      border-radius: var(--rayon);
-      overflow: hidden;
-      cursor: pointer;                    /* Indique que c'est cliquable */
-      border: 1px solid rgba(201,168,76,0.1);
-      transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
-      box-shadow: var(--ombre);
-    }
-
-    .dish-card:hover {
-      transform: translateY(-6px);        /* Monte au survol */
-      box-shadow: 0 16px 48px rgba(0,0,0,0.6);
-      border-color: rgba(201,168,76,0.4);
-    }
-
-    /* Zone image du plat */
-    .dish-img {
-      width: 100%;
-      height: 200px;
-      object-fit: cover;
-      display: block;
-      background: #2a2820;
-    }
-
-    /* Placeholder si pas d'image pour le plat */
-    .dish-img-placeholder {
-      width: 100%;
-      height: 200px;
-      background: #2a2820;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 3.5rem;
-    }
-
-    /* Infos sous l'image */
-    .dish-info { padding: 1.2rem; }
-
-    .dish-name {
-      font-family: var(--police-titre);
-      font-size: 1.2rem;
-      color: var(--couleur-texte);
-      margin-bottom: 0.4rem;
-    }
-
-    .dish-desc {
-      color: var(--couleur-texte-dim);
-      font-size: 0.85rem;
-      line-height: 1.5;
-      margin-bottom: 0.8rem;
-    }
-
-    /* Prix en bas de la carte */
-    .dish-price {
-      color: var(--couleur-or);
-      font-weight: 700;
-      font-size: 1.1rem;
-    }
-
-    /* ===================================================
-       PANNEAU DE DÉTAIL D'UN PLAT (overlay)
-       S'affiche quand on clique sur une carte
-    =================================================== */
-    .overlay {
-      display: none;             /* Caché par défaut */
-      position: fixed;
-      inset: 0;
-      z-index: 2000;
-      background: rgba(0,0,0,0.75);
-      backdrop-filter: blur(4px);
-      align-items: center;
-      justify-content: center;
-      padding: 2rem;
-    }
-
-    .overlay.open { display: flex; } /* Visible quand .open est ajouté */
-
-    /* Contenu du panneau */
-    .detail-panel {
-      background: var(--couleur-surface);
-      border-radius: var(--rayon);
-      border: 1px solid rgba(201,168,76,0.3);
-      max-width: 800px;
-      width: 100%;
-      display: flex;
-      gap: 0;
-      overflow: hidden;
-      box-shadow: 0 32px 80px rgba(0,0,0,0.8);
-      animation: slideUp 0.3s ease; /* Animation d'apparition */
-    }
-
-    /* Animation glissement vers le haut */
-    @keyframes slideUp {
-      from { transform: translateY(30px); opacity: 0; }
-      to   { transform: translateY(0);    opacity: 1; }
-    }
-
-    /* Image à gauche du panneau */
-    .detail-img {
-      width: 350px;
-      flex-shrink: 0;
-      object-fit: cover;
-      display: block;
-      background: #2a2820;
-    }
-
-    .detail-img-placeholder {
-      width: 350px;
-      flex-shrink: 0;
-      background: #2a2820;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 5rem;
-    }
-
-    /* Zone de droite : infos + ajout panier */
-    .detail-body {
-      flex: 1;
-      padding: 2rem;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* Bouton fermer (×) */
-    .close-btn {
-      align-self: flex-end;
-      background: none;
-      border: none;
-      color: var(--couleur-texte-dim);
-      font-size: 1.5rem;
-      cursor: pointer;
-      line-height: 1;
-      padding: 0;
-      margin-bottom: 1rem;
-      transition: color 0.2s;
-    }
-
-    .close-btn:hover { color: var(--couleur-texte); }
-
-    .detail-name {
-      font-family: var(--police-titre);
-      font-size: 1.8rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .detail-desc {
-      color: var(--couleur-texte-dim);
-      font-size: 0.95rem;
-      line-height: 1.7;
-      flex: 1;
-      margin-bottom: 1.5rem;
-    }
-
-    /* Prix dans le détail */
-    .detail-price {
-      font-size: 1.6rem;
-      font-weight: 700;
-      color: var(--couleur-or);
-      margin-bottom: 1.5rem;
-    }
-
-    /* ---------------------------------------------------
-       SÉLECTEUR DE QUANTITÉ + BOUTON AJOUTER AU PANIER
-    --------------------------------------------------- */
-    .qty-row {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      margin-bottom: 1rem;
-    }
-
-    /* Boutons – et + pour changer la quantité */
-    .qty-btn {
-      width: 36px; height: 36px;
-      border-radius: 50%;
-      border: 1px solid var(--couleur-or);
-      background: none;
-      color: var(--couleur-or);
-      font-size: 1.2rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.2s, color 0.2s;
-    }
-
-    .qty-btn:hover {
-      background: var(--couleur-or);
-      color: var(--couleur-fond);
-    }
-
-    /* Affichage du nombre */
-    .qty-display {
-      font-size: 1.3rem;
-      font-weight: 700;
-      min-width: 30px;
-      text-align: center;
-    }
-
-    /* Bouton principal "Ajouter au panier" */
-    .add-btn {
-      width: 100%;
-      padding: 0.85rem;
-      background: var(--couleur-or);
-      color: var(--couleur-fond);
-      border: none;
-      border-radius: 8px;
-      font-family: var(--police-corps);
-      font-weight: 700;
-      font-size: 0.95rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
-    }
-
-    .add-btn:hover { background: var(--couleur-or-clair); }
-    .add-btn:active { transform: scale(0.98); }
-
-    /* ===================================================
-       PANNEAU PANIER (drawer depuis la droite)
-    =================================================== */
-    .cart-drawer {
-      display: none;
-      position: fixed;
-      top: 0; right: 0;
-      width: 420px;
-      max-width: 100vw;
-      height: 100vh;
-      z-index: 3000;
-      background: var(--couleur-surface);
-      border-left: 1px solid rgba(201,168,76,0.2);
-      flex-direction: column;
-      box-shadow: -8px 0 40px rgba(0,0,0,0.6);
-      animation: slideIn 0.3s ease;
-    }
-
-    .cart-drawer.open { display: flex; }
-
-    @keyframes slideIn {
-      from { transform: translateX(100%); }
-      to   { transform: translateX(0); }
-    }
-
-    /* En-tête du panier */
-    .cart-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1.5rem;
-      border-bottom: 1px solid rgba(201,168,76,0.15);
-    }
-
-    .cart-header h2 {
-      font-family: var(--police-titre);
-      font-size: 1.5rem;
-      color: var(--couleur-or);
-    }
-
-    /* Liste des articles du panier (scrollable) */
-    .cart-items {
-      flex: 1;
-      overflow-y: auto;
-      padding: 1rem;
-    }
-
-    /* Un article dans le panier */
-    .cart-item {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 0.8rem 0;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
-
-    .cart-item-emoji { font-size: 2rem; }
-
-    .cart-item-info { flex: 1; }
-
-    .cart-item-name {
-      font-weight: 700;
-      font-size: 0.95rem;
-      margin-bottom: 0.2rem;
-    }
-
-    .cart-item-price {
-      color: var(--couleur-or);
-      font-size: 0.85rem;
-    }
-
-    /* Contrôles de quantité dans le panier */
-    .cart-item-controls {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .cart-qty-btn {
-      width: 28px; height: 28px;
-      border-radius: 50%;
-      border: 1px solid rgba(201,168,76,0.4);
-      background: none;
-      color: var(--couleur-or);
-      cursor: pointer;
-      font-size: 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.2s;
-    }
-
-    .cart-qty-btn:hover {
-      background: rgba(201,168,76,0.15);
-    }
-
-    .cart-item-qty { font-size: 0.95rem; min-width: 20px; text-align: center; }
-
-    /* Bas du panier : total + bouton payer */
-    .cart-footer {
-      padding: 1.5rem;
-      border-top: 1px solid rgba(201,168,76,0.15);
-    }
-
-    .cart-total {
-      display: flex;
-      justify-content: space-between;
-      font-size: 1.1rem;
-      font-weight: 700;
-      margin-bottom: 1rem;
-      color: var(--couleur-texte);
-    }
-
-    .cart-total span { color: var(--couleur-or); }
-
-    /* Bouton payer */
-    .pay-btn {
-      width: 100%;
-      padding: 1rem;
-      background: linear-gradient(135deg, var(--couleur-or), var(--couleur-or-clair));
-      color: var(--couleur-fond);
-      border: none;
-      border-radius: 8px;
-      font-family: var(--police-corps);
-      font-weight: 700;
-      font-size: 1rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: opacity 0.2s, transform 0.1s;
-    }
-
-    .pay-btn:hover { opacity: 0.9; }
-    .pay-btn:active { transform: scale(0.98); }
-
-    /* Message panier vide */
-    .empty-cart {
-      text-align: center;
-      color: var(--couleur-texte-dim);
-      padding: 3rem 1rem;
-      font-size: 0.95rem;
-    }
-
-    .empty-cart .icon { font-size: 3rem; display: block; margin-bottom: 1rem; }
-
-    /* ===================================================
-       PAGE CONTACT
-    =================================================== */
-    .contact-section {
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 4rem 2rem;
-      text-align: center;
-    }
-
-    /* Icônes de contact (email, Instagram) */
-    .contact-links {
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-      margin-top: 3rem;
-      align-items: center;
-    }
-
-    /* Chaque lien de contact */
-    .contact-link {
-      display: flex;
-      align-items: center;
-      gap: 1.2rem;
-      background: var(--couleur-surface);
-      border: 1px solid rgba(201,168,76,0.2);
-      border-radius: var(--rayon);
-      padding: 1.2rem 2rem;
-      width: 100%;
-      max-width: 400px;
-      cursor: pointer;
-      text-decoration: none;
-      color: var(--couleur-texte);
-      transition: border-color 0.2s, transform 0.2s;
-    }
-
-    .contact-link:hover {
-      border-color: var(--couleur-or);
-      transform: translateX(4px);
-    }
-
-    .contact-link .contact-icon { font-size: 1.8rem; }
-
-    .contact-link-info { text-align: left; }
-
-    .contact-link-label {
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 0.15em;
-      color: var(--couleur-texte-dim);
-      margin-bottom: 0.3rem;
-    }
-
-    /* ---------------------------------------------------
-       VALEUR À MODIFIER : votre email et Instagram
-       Cherchez "votre@email.com" et "@votre_instagram"
-    --------------------------------------------------- */
-    .contact-link-value {
-      font-weight: 700;
-      font-size: 1rem;
-      color: var(--couleur-or);
-    }
-
-    /* ===================================================
-       TOAST DE NOTIFICATION
-       Apparaît brièvement quand on ajoute au panier
-    =================================================== */
-    .toast {
-      position: fixed;
-      bottom: 2rem;
-      left: 50%;
-      transform: translateX(-50%) translateY(100px);
-      background: var(--couleur-or);
-      color: var(--couleur-fond);
-      padding: 0.8rem 1.8rem;
-      border-radius: 50px;
-      font-weight: 700;
-      font-size: 0.9rem;
-      z-index: 9999;
-      transition: transform 0.3s ease;
-      white-space: nowrap;
-    }
-
-    /* Visible quand .show est ajouté */
-    .toast.show { transform: translateX(-50%) translateY(0); }
-
-    /* ===================================================
-       RESPONSIVE – Mobile
-    =================================================== */
-    @media (max-width: 768px) {
-      .hero-content { flex-direction: column; gap: 2rem; text-align: center; }
-      .divider { margin: 1rem auto; }
-      .hero-desc { max-width: 100%; }
-      .chef-placeholder, .chef-photo { width: 260px; height: 320px; }
-      .detail-panel { flex-direction: column; }
-      .detail-img, .detail-img-placeholder { width: 100%; height: 220px; }
-      .nav-links { gap: 1.2rem; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chef — Gastronomie Moderne</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --noir: #0d0d0d;
+    --charbon: #161616;
+    --gris-fonce: #1e1e1e;
+    --or: #c9a84c;
+    --or-clair: #e8c97a;
+    --blanc: #f5f0e8;
+    --gris-texte: #9a9a9a;
+    --rouge: #8b2c2c;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--noir);
+    color: var(--blanc);
+    font-family: 'Outfit', sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* CURSEUR CUSTOM */
+  .cursor {
+    position: fixed;
+    width: 12px;
+    height: 12px;
+    background: var(--or);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s ease, width 0.3s, height 0.3s, background 0.3s;
+  }
+  .cursor-ring {
+    position: fixed;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--or);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    transform: translate(-50%, -50%);
+    transition: transform 0.15s ease, width 0.3s, height 0.3s;
+    opacity: 0.5;
+  }
+
+  /* BARRE DE NAVIGATION */
+  nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px 60px;
+    background: linear-gradient(to bottom, rgba(13,13,13,0.95), transparent);
+    backdrop-filter: blur(0px);
+    transition: background 0.4s;
+  }
+  nav.scrolled {
+    background: rgba(13,13,13,0.97);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(201,168,76,0.15);
+  }
+
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    letter-spacing: 0.08em;
+    color: var(--or);
+    text-decoration: none;
+  }
+  .logo span { font-style: italic; color: var(--blanc); }
+
+  .nav-links {
+    display: flex;
+    gap: 48px;
+    list-style: none;
+  }
+  .nav-links a {
+    color: var(--gris-texte);
+    text-decoration: none;
+    font-size: 0.78rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    transition: color 0.3s;
+    position: relative;
+  }
+  .nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: var(--or);
+    transition: width 0.3s;
+  }
+  .nav-links a:hover, .nav-links a.active { color: var(--or); }
+  .nav-links a:hover::after, .nav-links a.active::after { width: 100%; }
+
+  /* SECTIONS */
+  section {
+    min-height: 100vh;
+    display: none;
+    padding-top: 90px;
+  }
+  section.active { display: block; }
+
+  /* ========== HOME ========== */
+  #home {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero {
+    position: relative;
+    height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    padding: 0 60px;
+    gap: 80px;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 80% at 70% 50%, rgba(201,168,76,0.06) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 40% at 10% 80%, rgba(139,44,44,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .hero-grain {
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+    pointer-events: none;
+    opacity: 0.4;
+  }
+
+  .hero-text { position: relative; }
+
+  .hero-eyebrow {
+    font-size: 0.7rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--or);
+    margin-bottom: 24px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.2s forwards;
+  }
+
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3rem, 5vw, 5.5rem);
+    line-height: 1.05;
+    font-weight: 900;
+    margin-bottom: 32px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.4s forwards;
+  }
+  .hero-title em {
+    font-style: italic;
+    color: var(--or);
+    display: block;
+  }
+
+  .hero-desc {
+    font-size: 1rem;
+    line-height: 1.8;
+    color: var(--gris-texte);
+    max-width: 440px;
+    margin-bottom: 48px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.6s forwards;
+  }
+
+  .hero-signature {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem;
+    font-style: italic;
+    color: var(--or);
+    opacity: 0;
+    animation: fadeUp 0.8s 0.8s forwards;
+  }
+
+  .hero-image {
+    position: relative;
+    opacity: 0;
+    animation: fadeIn 1s 0.5s forwards;
+  }
+
+  .chef-portrait {
+    width: 100%;
+    aspect-ratio: 3/4;
+    background: var(--gris-fonce);
+    border-radius: 2px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .chef-portrait-inner {
+    width: 100%;
+    height: 100%;
+    background:
+      linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 50%, #1a1a1a 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+  }
+
+  .chef-icon {
+    font-size: 6rem;
+    filter: grayscale(30%);
+  }
+
+  .chef-label {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    color: var(--or);
+    font-size: 0.9rem;
+    letter-spacing: 0.1em;
+  }
+
+  .portrait-frame {
+    position: absolute;
+    inset: 12px;
+    border: 1px solid rgba(201,168,76,0.25);
+    pointer-events: none;
+  }
+  .portrait-accent {
+    position: absolute;
+    bottom: -20px;
+    right: -20px;
+    width: 120px;
+    height: 120px;
+    border: 1px solid rgba(201,168,76,0.3);
+    z-index: -1;
+  }
+
+  /* STATS */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: rgba(201,168,76,0.1);
+    margin: 0;
+  }
+  .stat {
+    background: var(--noir);
+    padding: 48px 40px;
+    text-align: center;
+  }
+  .stat-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: var(--or);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .stat-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gris-texte);
+  }
+
+  /* BIO */
+  .bio-section {
+    padding: 100px 60px;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 80px;
+    align-items: start;
+    border-top: 1px solid rgba(201,168,76,0.1);
+  }
+
+  .bio-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--or);
+    padding-top: 6px;
+  }
+
+  .bio-content h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.8rem;
+    font-weight: 700;
+    margin-bottom: 32px;
+    line-height: 1.2;
+  }
+  .bio-content h2 em { font-style: italic; color: var(--or); }
+
+  .bio-content p {
+    color: var(--gris-texte);
+    line-height: 1.9;
+    margin-bottom: 20px;
+    font-size: 1rem;
+  }
+
+  .bio-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 40px;
+  }
+  .bio-tag {
+    border: 1px solid rgba(201,168,76,0.3);
+    color: var(--or);
+    padding: 8px 20px;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  /* ========== CARTE ========== */
+  #carte { min-height: 100vh; }
+
+  .carte-header {
+    padding: 60px 60px 0;
+    text-align: center;
+    position: relative;
+  }
+  .carte-header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.5rem, 4vw, 4rem);
+    font-weight: 900;
+    margin-bottom: 16px;
+  }
+  .carte-header h1 em { font-style: italic; color: var(--or); }
+  .carte-header p {
+    color: var(--gris-texte);
+    font-size: 0.9rem;
+    letter-spacing: 0.1em;
+    margin-bottom: 48px;
+  }
+
+  .category-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    border: 1px solid rgba(201,168,76,0.2);
+    display: inline-flex;
+    margin-bottom: 60px;
+  }
+  .tab {
+    padding: 12px 28px;
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: var(--gris-texte);
+    font-family: 'Outfit', sans-serif;
+    transition: all 0.3s;
+    border-right: 1px solid rgba(201,168,76,0.2);
+  }
+  .tab:last-child { border-right: none; }
+  .tab.active, .tab:hover { background: var(--or); color: var(--noir); }
+
+  .plats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2px;
+    padding: 0 60px 80px;
+    background: rgba(201,168,76,0.05);
+  }
+
+  .plat-card {
+    background: var(--charbon);
+    cursor: pointer;
+    transition: transform 0.3s, background 0.3s;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .plat-card:hover { background: var(--gris-fonce); transform: translateY(-4px); }
+
+  .plat-emoji {
+    font-size: 4rem;
+    padding: 40px 32px 20px;
+    display: block;
+    transition: transform 0.3s;
+  }
+  .plat-card:hover .plat-emoji { transform: scale(1.1) rotate(-5deg); }
+
+  .plat-info {
+    padding: 0 32px 32px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .plat-categorie {
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--or);
+    margin-bottom: 10px;
+  }
+  .plat-nom {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    line-height: 1.2;
+  }
+  .plat-desc {
+    font-size: 0.85rem;
+    color: var(--gris-texte);
+    line-height: 1.6;
+    margin-bottom: 20px;
+    flex: 1;
+  }
+  .plat-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .plat-prix {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    color: var(--or);
+  }
+  .plat-voir {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gris-texte);
+    border-bottom: 1px solid rgba(154,154,154,0.3);
+    padding-bottom: 2px;
+    transition: color 0.3s, border-color 0.3s;
+  }
+  .plat-card:hover .plat-voir { color: var(--or); border-color: var(--or); }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 1000;
+    backdrop-filter: blur(8px);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; animation: fadeIn 0.3s; }
+
+  .modal {
+    background: var(--charbon);
+    border: 1px solid rgba(201,168,76,0.2);
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    animation: slideUp 0.4s ease;
+  }
+
+  .modal-header {
+    padding: 48px 48px 32px;
+    border-bottom: 1px solid rgba(201,168,76,0.1);
+  }
+  .modal-emoji { font-size: 3.5rem; margin-bottom: 16px; display: block; }
+  .modal-cat {
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--or);
+    margin-bottom: 8px;
+  }
+  .modal-nom {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 900;
+  }
+
+  .modal-body { padding: 40px 48px 48px; }
+
+  .modal-section-title {
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--or);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .modal-section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(201,168,76,0.2);
+  }
+
+  .ingredients-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 36px;
+  }
+  .ingredient {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+    color: var(--gris-texte);
+  }
+  .ingredient::before {
+    content: '';
+    width: 4px;
+    height: 4px;
+    background: var(--or);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .allergens {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 32px;
+  }
+  .allergen {
+    background: rgba(139,44,44,0.15);
+    border: 1px solid rgba(139,44,44,0.3);
+    color: #e88;
+    padding: 4px 12px;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    border-radius: 2px;
+  }
+
+  .modal-prix-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding-top: 24px;
+    border-top: 1px solid rgba(201,168,76,0.1);
+  }
+  .modal-prix-label { font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gris-texte); }
+  .modal-prix-val {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    color: var(--or);
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 36px;
+    height: 36px;
+    background: transparent;
+    border: 1px solid rgba(201,168,76,0.2);
+    color: var(--gris-texte);
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+  }
+  .modal-close:hover { background: var(--or); color: var(--noir); border-color: var(--or); }
+
+  /* ========== CONTACT ========== */
+  #contact {
+    display: none;
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+  #contact.active { display: flex; }
+
+  .contact-wrap {
+    max-width: 700px;
+    width: 100%;
+    padding: 60px;
+    text-align: center;
+  }
+
+  .contact-eyebrow {
+    font-size: 0.7rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--or);
+    margin-bottom: 24px;
+  }
+  .contact-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.5rem, 4vw, 4rem);
+    font-weight: 900;
+    margin-bottom: 20px;
+    line-height: 1.1;
+  }
+  .contact-title em { font-style: italic; color: var(--or); }
+  .contact-sub {
+    color: var(--gris-texte);
+    font-size: 0.95rem;
+    line-height: 1.7;
+    margin-bottom: 64px;
+  }
+
+  .contact-links {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    background: rgba(201,168,76,0.1);
+    margin-bottom: 64px;
+  }
+
+  .contact-link {
+    background: var(--charbon);
+    padding: 48px 40px;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    transition: background 0.3s, transform 0.3s;
+    color: inherit;
+  }
+  .contact-link:hover { background: var(--gris-fonce); transform: translateY(-4px); }
+
+  .contact-link-icon {
+    font-size: 2.5rem;
+    filter: grayscale(0.2);
+  }
+  .contact-link-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--or);
+  }
+  .contact-link-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    font-style: italic;
+    color: var(--blanc);
+  }
+
+  .contact-separator {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    color: rgba(201,168,76,0.3);
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin-bottom: 48px;
+  }
+  .contact-separator::before, .contact-separator::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(201,168,76,0.2);
+  }
+
+  .contact-quote {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    font-style: italic;
+    color: var(--gris-texte);
+    line-height: 1.6;
+    padding: 32px;
+    border-left: 2px solid var(--or);
+    text-align: left;
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* DIVIDER ORNEMENTAL */
+  .ornament {
+    text-align: center;
+    color: rgba(201,168,76,0.4);
+    font-size: 1.2rem;
+    letter-spacing: 0.5em;
+    padding: 20px 0;
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--noir); }
+  ::-webkit-scrollbar-thumb { background: var(--or); }
+</style>
 </head>
 <body>
 
-  <!-- ===================================================
-       BARRE DE NAVIGATION FIXE
-  =================================================== -->
-  <nav>
-    <!-- NOM DU SITE : modifiez le texte ici -->
-    <div class="nav-logo" onclick="showPage('home')">La Maison du Chef</div>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
 
-    <!-- LIENS DE NAVIGATION -->
-    <ul class="nav-links">
-      <li><a onclick="showPage('home')"    id="link-home"    class="active">Home</a></li>
-      <li><a onclick="showPage('carte')"   id="link-carte">Carte</a></li>
-      <li><a onclick="showPage('contact')" id="link-contact">Contact</a></li>
-    </ul>
+<nav id="navbar">
+  <a href="#" class="logo">La <span>Maison</span></a>
+  <ul class="nav-links">
+    <li><a href="#" onclick="showSection('home')" class="active" id="nav-home">Accueil</a></li>
+    <li><a href="#" onclick="showSection('carte')" id="nav-carte">Carte</a></li>
+    <li><a href="#" onclick="showSection('contact')" id="nav-contact">Contact</a></li>
+  </ul>
+</nav>
 
-    <!-- BOUTON PANIER (haut droite) -->
-    <button class="cart-btn" onclick="toggleCart()">
-      🛒 Panier
-      <!-- Badge avec le nombre d'articles total -->
-      <span class="cart-badge" id="cartBadge" style="display:none">0</span>
-    </button>
-  </nav>
-
-
-  <!-- ===================================================
-       PAGE : HOME
-       Présentation du chef + nom du restaurant
-  =================================================== -->
-  <section class="page active" id="page-home">
-    <div class="hero">
-      <div class="hero-content">
-
-        <!-- PHOTO DU CHEF
-             → Remplacez la div.chef-placeholder par :
-               <img src="votre-photo.jpg" class="chef-photo" alt="Chef">
-        -->
-        <div class="chef-photo-wrap">
-          <div class="chef-placeholder">
-            <span class="icon">👨‍🍳</span>
-            <span>Votre photo<br>ici</span>
-          </div>
-        </div>
-
-        <!-- TEXTE DE PRÉSENTATION -->
-        <div class="hero-text">
-          <p class="hero-label">Bienvenue dans notre univers</p>
-
-          <!-- NOM DU RESTAURANT : modifiez ici -->
-          <h1 class="hero-title">La Maison<br>du <em>Chef</em></h1>
-
-          <div class="divider"></div>
-
-          <!-- PRÉSENTATION DU CHEF : modifiez ce texte -->
-          <p class="hero-desc">
-            Passionné depuis l'enfance par les saveurs authentiques, le Chef
-            Jean-Pierre vous invite à découvrir une cuisine du terroir revisitée
-            avec audace. Chaque assiette raconte une histoire, chaque bouchée
-            est une émotion. Bienvenue à la table que je vous ai préparée.
-          </p>
-
-          <!-- NOM DU CHEF : modifiez ici -->
-          <p class="chef-name">— Chef Jean-Pierre Martin</p>
-        </div>
-
-      </div>
+<!-- ======== HOME ======== -->
+<section id="home" class="active">
+  <div class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grain"></div>
+    <div class="hero-text">
+      <p class="hero-eyebrow">Chef Cuisinier — Lyon, France</p>
+      <h1 class="hero-title">
+        L'art<br>de cuisiner<br><em>avec passion</em>
+      </h1>
+      <p class="hero-desc">
+        Chaque assiette raconte une histoire. De la sélection des meilleurs produits locaux à la mise en scène finale, je m'engage à vous offrir une expérience culinaire inoubliable.
+      </p>
+      <div class="hero-signature">Votre Chef</div>
     </div>
-  </section>
-
-
-  <!-- ===================================================
-       PAGE : CARTE
-       Grille de plats cliquables
-  =================================================== -->
-  <section class="page" id="page-carte">
-    <div class="carte-section">
-      <h2 class="section-title">Notre Carte</h2>
-      <p class="section-subtitle">Cliquez sur un plat pour le découvrir et l'ajouter à votre panier</p>
-
-      <!-- GRILLE DES PLATS
-           Pour ajouter un plat : dupliquez un bloc .dish-card
-           et modifiez : data-id (unique), data-name, data-price,
-           data-desc, data-emoji
-      -->
-      <div class="dishes-grid" id="dishesGrid">
-
-        <!-- ---- PLAT 1 ---- -->
-        <div class="dish-card"
-             data-id="1"
-             data-name="Soupe à l'Oignon"
-             data-price="12"
-             data-desc="Notre soupe à l'oignon gratinée, mijotée longuement avec un bouillon de bœuf corsé, servie avec des croûtons au fromage comté fondant."
-             data-emoji="🧅"
-             onclick="openDish(this)">
-          <!-- Image du plat : remplacez par <img src="..." class="dish-img"> -->
-          <div class="dish-img-placeholder">🧅</div>
-          <div class="dish-info">
-            <h3 class="dish-name">Soupe à l'Oignon</h3>
-            <p class="dish-desc">Gratinée, bouillon de bœuf, comté</p>
-            <p class="dish-price">12,00 €</p>
-          </div>
+    <div class="hero-image">
+      <div class="chef-portrait">
+        <div class="chef-portrait-inner">
+          <span class="chef-icon">👨‍🍳</span>
+          <span class="chef-label">Votre photo ici</span>
         </div>
-
-        <!-- ---- PLAT 2 ---- -->
-        <div class="dish-card"
-             data-id="2"
-             data-name="Magret de Canard"
-             data-price="24"
-             data-desc="Magret de canard rosé, sauce aux cerises et au miel, accompagné d'un gratin dauphinois crémeux et de haricots verts croquants."
-             data-emoji="🦆"
-             onclick="openDish(this)">
-          <div class="dish-img-placeholder">🦆</div>
-          <div class="dish-info">
-            <h3 class="dish-name">Magret de Canard</h3>
-            <p class="dish-desc">Sauce cerise-miel, gratin dauphinois</p>
-            <p class="dish-price">24,00 €</p>
-          </div>
-        </div>
-
-        <!-- ---- PLAT 3 ---- -->
-        <div class="dish-card"
-             data-id="3"
-             data-name="Crème Brûlée"
-             data-price="9"
-             data-desc="La classique crème brûlée à la vanille de Madagascar, caramélisée à la minute, accompagnée de ses petits sablés bretons maison."
-             data-emoji="🍮"
-             onclick="openDish(this)">
-          <div class="dish-img-placeholder">🍮</div>
-          <div class="dish-info">
-            <h3 class="dish-name">Crème Brûlée</h3>
-            <p class="dish-desc">Vanille Madagascar, sablés maison</p>
-            <p class="dish-price">9,00 €</p>
-          </div>
-        </div>
-
-        <!-- ---- PLAT 4 ---- -->
-        <div class="dish-card"
-             data-id="4"
-             data-name="Tartare de Saumon"
-             data-price="18"
-             data-desc="Saumon frais taillé au couteau, citron vert, aneth, câpres et avocat crémeux. Servi avec des toasts de pain noir croustillants."
-             data-emoji="🐟"
-             onclick="openDish(this)">
-          <div class="dish-img-placeholder">🐟</div>
-          <div class="dish-info">
-            <h3 class="dish-name">Tartare de Saumon</h3>
-            <p class="dish-desc">Citron vert, aneth, avocat, toasts</p>
-            <p class="dish-price">18,00 €</p>
-          </div>
-        </div>
-
-        <!-- ---- PLAT 5 ---- -->
-        <div class="dish-card"
-             data-id="5"
-             data-name="Risotto Truffe"
-             data-price="22"
-             data-desc="Risotto carnaroli mantecato, copeaux de truffe noire du Périgord, parmesan 24 mois affiné, huile de truffe et poivre long."
-             data-emoji="🍄"
-             onclick="openDish(this)">
-          <div class="dish-img-placeholder">🍄</div>
-          <div class="dish-info">
-            <h3 class="dish-name">Risotto Truffe</h3>
-            <p class="dish-desc">Truffe noire Périgord, parmesan 24 mois</p>
-            <p class="dish-price">22,00 €</p>
-          </div>
-        </div>
-
-        <!-- ---- PLAT 6 ---- -->
-        <div class="dish-card"
-             data-id="6"
-             data-name="Fondant Chocolat"
-             data-price="10"
-             data-desc="Fondant au chocolat Valrhona 70% avec un cœur coulant, servi tiède avec une quenelle de glace vanille et un coulis de caramel beurre salé."
-             data-emoji="🍫"
-             onclick="openDish(this)">
-          <div class="dish-img-placeholder">🍫</div>
-          <div class="dish-info">
-            <h3 class="dish-name">Fondant Chocolat</h3>
-            <p class="dish-desc">Valrhona 70%, cœur coulant, caramel</p>
-            <p class="dish-price">10,00 €</p>
-          </div>
-        </div>
-
-      </div><!-- fin .dishes-grid -->
-    </div>
-  </section>
-
-
-  <!-- ===================================================
-       PAGE : CONTACT
-       Email et Instagram du restaurant
-  =================================================== -->
-  <section class="page" id="page-contact">
-    <div class="contact-section">
-      <h2 class="section-title">Nous Contacter</h2>
-      <p class="section-subtitle">Réservations, questions, partenariats – nous sommes là</p>
-
-      <div class="contact-links">
-
-        <!-- LIEN EMAIL
-             → Modifiez href="mailto:..." et la valeur ci-dessous
-        -->
-        <a class="contact-link" href="mailto:votre@email.com">
-          <span class="contact-icon">✉️</span>
-          <div class="contact-link-info">
-            <p class="contact-link-label">Email</p>
-            <!-- MODIFIEZ VOTRE EMAIL ICI -->
-            <p class="contact-link-value">votre@email.com</p>
-          </div>
-        </a>
-
-        <!-- LIEN INSTAGRAM
-             → Modifiez href="https://instagram.com/..." et la valeur ci-dessous
-        -->
-        <a class="contact-link" href="https://instagram.com/votre_instagram" target="_blank">
-          <span class="contact-icon">📸</span>
-          <div class="contact-link-info">
-            <p class="contact-link-label">Instagram</p>
-            <!-- MODIFIEZ VOTRE INSTAGRAM ICI -->
-            <p class="contact-link-value">@votre_instagram</p>
-          </div>
-        </a>
-
+        <div class="portrait-frame"></div>
       </div>
-    </div>
-  </section>
-
-
-  <!-- ===================================================
-       OVERLAY DÉTAIL D'UN PLAT
-       Apparaît au clic sur une carte de plat
-  =================================================== -->
-  <div class="overlay" id="dishOverlay" onclick="closeDishOnBg(event)">
-    <div class="detail-panel" id="detailPanel">
-
-      <!-- Image grande à gauche -->
-      <div class="detail-img-placeholder" id="detailEmoji">🍽️</div>
-
-      <!-- Infos + contrôles à droite -->
-      <div class="detail-body">
-        <button class="close-btn" onclick="closeDetail()">✕</button>
-        <h2 class="detail-name"  id="detailName">Nom du plat</h2>
-        <p class="detail-desc"   id="detailDesc">Description...</p>
-        <p class="detail-price"  id="detailPrice">0,00 €</p>
-
-        <!-- Sélecteur de quantité -->
-        <div class="qty-row">
-          <button class="qty-btn" onclick="changeQty(-1)">−</button>
-          <span class="qty-display" id="qtyDisplay">1</span>
-          <button class="qty-btn" onclick="changeQty(+1)">+</button>
-        </div>
-
-        <!-- Bouton ajouter au panier -->
-        <button class="add-btn" onclick="addToCart()">
-          Ajouter au panier
-        </button>
-      </div>
+      <div class="portrait-accent"></div>
     </div>
   </div>
 
-
-  <!-- ===================================================
-       DRAWER PANIER (depuis la droite)
-  =================================================== -->
-  <div class="cart-drawer" id="cartDrawer">
-    <div class="cart-header">
-      <h2>🛒 Mon Panier</h2>
-      <button class="close-btn" onclick="toggleCart()">✕</button>
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-number">12+</div>
+      <div class="stat-label">Années d'expérience</div>
     </div>
-
-    <!-- Liste des articles -->
-    <div class="cart-items" id="cartItems">
-      <div class="empty-cart">
-        <span class="icon">🍽️</span>
-        Votre panier est vide.<br>Ajoutez des plats depuis la carte !
-      </div>
+    <div class="stat">
+      <div class="stat-number">3</div>
+      <div class="stat-label">Étoiles au Guide</div>
     </div>
-
-    <!-- Total + paiement -->
-    <div class="cart-footer">
-      <div class="cart-total">
-        Total <span id="cartTotal">0,00 €</span>
-      </div>
-      <!-- BOUTON PAYER : connectez votre solution de paiement ici -->
-      <button class="pay-btn" onclick="handlePayment()">
-        💳 Payer ma commande
-      </button>
+    <div class="stat">
+      <div class="stat-number">500+</div>
+      <div class="stat-label">Plats créés</div>
     </div>
   </div>
 
+  <div class="bio-section">
+    <div class="bio-label">Ma story</div>
+    <div class="bio-content">
+      <h2>Une passion née <em>dans les cuisines</em> lyonnaises</h2>
+      <p>
+        Né à Lyon, berceau de la gastronomie française, j'ai grandi entre les marchés colorés de la Croix-Rousse et les cuisines des bouchons traditionnels. Dès l'âge de 15 ans, j'ai su que ma vie serait dédiée à la cuisine.
+      </p>
+      <p>
+        Formé auprès des plus grands chefs — de Paul Bocuse à Anne-Sophie Pic — j'ai appris que la perfection réside dans le détail : la qualité du produit, la justesse de la cuisson, l'équilibre des saveurs. Ma cuisine est un dialogue entre tradition et modernité.
+      </p>
+      <p>
+        Aujourd'hui, je partage cette passion à travers ma carte, imaginée chaque saison en accord avec les producteurs locaux que je respecte profondément.
+      </p>
+      <div class="bio-tags">
+        <span class="bio-tag">Cuisine française</span>
+        <span class="bio-tag">Produits locaux</span>
+        <span class="bio-tag">Gastronomie moderne</span>
+        <span class="bio-tag">Créativité</span>
+        <span class="bio-tag">Saison</span>
+      </div>
+    </div>
+  </div>
+</section>
 
-  <!-- ===================================================
-       TOAST DE NOTIFICATION
-  =================================================== -->
-  <div class="toast" id="toast">✓ Ajouté au panier !</div>
+<!-- ======== CARTE ======== -->
+<section id="carte">
+  <div class="carte-header">
+    <h1>Notre <em>Carte</em></h1>
+    <p>Cliquez sur un plat pour découvrir sa composition</p>
+    <div class="category-tabs">
+      <button class="tab active" onclick="filterPlats('tous')">Tous</button>
+      <button class="tab" onclick="filterPlats('entrée')">Entrées</button>
+      <button class="tab" onclick="filterPlats('plat')">Plats</button>
+      <button class="tab" onclick="filterPlats('dessert')">Desserts</button>
+    </div>
+  </div>
 
+  <div class="plats-grid" id="platsGrid"></div>
+</section>
 
-  <!-- ===================================================
-       JAVASCRIPT – LOGIQUE DU SITE
-  =================================================== -->
-  <script>
+<!-- ======== CONTACT ======== -->
+<section id="contact">
+  <div class="contact-wrap">
+    <p class="contact-eyebrow">Restons en contact</p>
+    <h1 class="contact-title">Envie d'en <em>savoir plus ?</em></h1>
+    <p class="contact-sub">
+      Pour des réservations, collaborations, ou simplement partager votre amour de la bonne cuisine, n'hésitez pas à me contacter.
+    </p>
 
-    /* -----------------------------------------------
-       ÉTAT GLOBAL
-       Toutes les données importantes du site
-    ----------------------------------------------- */
-    let cart         = {};     // Objet { dishId: { name, price, emoji, qty } }
-    let currentDish  = null;   // Plat actuellement affiché dans l'overlay
-    let currentQty   = 1;      // Quantité sélectionnée dans l'overlay
+    <div class="contact-links">
+      <a href="https://instagram.com/votre_instagram" target="_blank" class="contact-link">
+        <span class="contact-link-icon">📸</span>
+        <span class="contact-link-label">Instagram</span>
+        <span class="contact-link-value">@votre_instagram</span>
+      </a>
+      <a href="mailto:votre@email.com" class="contact-link">
+        <span class="contact-link-icon">✉️</span>
+        <span class="contact-link-label">Email</span>
+        <span class="contact-link-value">votre@email.com</span>
+      </a>
+    </div>
 
-    /* -----------------------------------------------
-       NAVIGATION ENTRE LES PAGES
-       Masque toutes les pages, affiche celle demandée
-    ----------------------------------------------- */
-    function showPage(pageName) {
-      // Masquer toutes les pages
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      // Afficher la page cible
-      document.getElementById('page-' + pageName).classList.add('active');
+    <div class="contact-separator">La cuisine, c'est l'amour</div>
 
-      // Mettre à jour les liens actifs dans la nav
-      document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
-      document.getElementById('link-' + pageName).classList.add('active');
+    <div class="contact-quote">
+      "La cuisine, c'est quand les choses ont le goût de ce qu'elles sont."<br>
+      <small style="color: var(--or); font-size: 0.75rem; margin-top: 8px; display: block;">— Curnonsky</small>
+    </div>
+  </div>
+</section>
 
-      // Remonter en haut de la page
-      window.scrollTo(0, 0);
+<!-- MODAL PLAT -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-header">
+      <span class="modal-emoji" id="modalEmoji"></span>
+      <p class="modal-cat" id="modalCat"></p>
+      <h2 class="modal-nom" id="modalNom"></h2>
+    </div>
+    <div class="modal-body">
+      <p class="modal-section-title">Composition du plat</p>
+      <div class="ingredients-grid" id="modalIngredients"></div>
+      <p class="modal-section-title">Allergènes</p>
+      <div class="allergens" id="modalAllergens"></div>
+      <div class="modal-prix-row">
+        <span class="modal-prix-label">Prix</span>
+        <span class="modal-prix-val" id="modalPrix"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ---- CURSEUR ----
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  document.addEventListener('mousemove', e => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top = e.clientY + 'px';
+    ring.style.left = e.clientX + 'px';
+    ring.style.top = e.clientY + 'px';
+  });
+
+  // ---- NAVBAR SCROLL ----
+  window.addEventListener('scroll', () => {
+    document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 40);
+  });
+
+  // ---- NAVIGATION ----
+  function showSection(id) {
+    document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.getElementById('nav-' + id).classList.add('active');
+    window.scrollTo(0, 0);
+    return false;
+  }
+
+  // ---- DONNÉES PLATS ----
+  const plats = [
+    {
+      id: 1, emoji: '🥗', categorie: 'entrée', nom: 'Carpaccio de betterave',
+      desc: 'Betteraves multicolores marinées, chèvre frais, noix de pécan',
+      prix: '18€',
+      ingredients: ['Betterave rouge', 'Betterave jaune', 'Chèvre frais AOP', 'Noix de pécan', 'Roquette sauvage', 'Vinaigrette au miel', 'Fleurs comestibles', 'Huile de truffe blanche'],
+      allergens: ['Fruits à coque', 'Lactose']
+    },
+    {
+      id: 2, emoji: '🦞', categorie: 'entrée', nom: 'Tartare de homard',
+      desc: 'Homard breton, avocat, caviar d\'Aquitaine, émulsion citron',
+      prix: '42€',
+      ingredients: ['Homard breton vivant', 'Avocat Hass', 'Caviar d\'Aquitaine', 'Citron caviar', 'Aneth frais', 'Crème fraîche', 'Blinis maison', 'Sel de Guérande'],
+      allergens: ['Crustacés', 'Œufs', 'Gluten', 'Lactose']
+    },
+    {
+      id: 3, emoji: '🥕', categorie: 'entrée', nom: 'Velouté de carotte',
+      desc: 'Carottes du jardin, lait de coco, gingembre, huile de coriandre',
+      prix: '14€',
+      ingredients: ['Carottes BIO', 'Lait de coco', 'Gingembre frais', 'Coriandre fraîche', 'Citron vert', 'Crème de coco', 'Piment d\'Espelette', 'Bouillon maison'],
+      allergens: ['Lactose']
+    },
+    {
+      id: 4, emoji: '🥩', categorie: 'plat', nom: 'Filet de bœuf Rossini',
+      desc: 'Bœuf charolais, foie gras poêlé, truffe noire, sauce Périgueux',
+      prix: '58€',
+      ingredients: ['Filet de bœuf charolais', 'Foie gras de canard', 'Truffe noire du Périgord', 'Madère', 'Fond de veau', 'Pommes dauphine', 'Haricots verts fins', 'Beurre de Normandie'],
+      allergens: ['Gluten', 'Lactose', 'Foie gras']
+    },
+    {
+      id: 5, emoji: '🐟', categorie: 'plat', nom: 'Sole meunière revisitée',
+      desc: 'Sole de ligne, beurre noisette aux câpres, grenaille rôtie',
+      prix: '38€',
+      ingredients: ['Sole de ligne entière', 'Beurre de Normandie', 'Câpres de Pantelleria', 'Persil plat', 'Citron de Menton', 'Grenaille BIO', 'Herbes de Provence', 'Fleur de sel'],
+      allergens: ['Poisson', 'Lactose']
+    },
+    {
+      id: 6, emoji: '🍄', categorie: 'plat', nom: 'Risotto aux cèpes',
+      desc: 'Riz carnaroli, cèpes sauvages, parmesan 36 mois, truffe d\'été',
+      prix: '32€',
+      ingredients: ['Riz Carnaroli', 'Cèpes sauvages', 'Parmesan 36 mois', 'Truffe d\'été', 'Vin blanc sec', 'Bouillon de légumes', 'Échalotes', 'Beurre de Normandie'],
+      allergens: ['Lactose', 'Gluten']
+    },
+    {
+      id: 7, emoji: '🍮', categorie: 'dessert', nom: 'Crème brûlée au jasmin',
+      desc: 'Crème onctueuse infusée au jasmin, caramel craquant, fleurs fraîches',
+      prix: '12€',
+      ingredients: ['Crème entière', 'Jaune d\'œuf', 'Sucre de canne', 'Fleurs de jasmin séchées', 'Vanille de Madagascar', 'Sucre roux pour caramel', 'Fleurs fraîches', 'Zeste de citron'],
+      allergens: ['Lactose', 'Œufs']
+    },
+    {
+      id: 8, emoji: '🍫', categorie: 'dessert', nom: 'Fondant au chocolat noir',
+      desc: 'Valrhona 70%, cœur coulant caramel beurre salé, glace vanille',
+      prix: '14€',
+      ingredients: ['Chocolat Valrhona 70%', 'Beurre demi-sel', 'Sucre', 'Œufs fermiers', 'Farine T55', 'Caramel maison', 'Fleur de sel', 'Glace vanille maison'],
+      allergens: ['Gluten', 'Lactose', 'Œufs']
+    },
+    {
+      id: 9, emoji: '🍓', categorie: 'dessert', nom: 'Vacherin aux fraises',
+      desc: 'Meringue craquante, chantilly légère, fraises de Carpentras',
+      prix: '13€',
+      ingredients: ['Meringue française', 'Crème fleurette 35%', 'Fraises de Carpentras', 'Coulis de fraise', 'Sucre glace', 'Basilic frais', 'Pistaches concassées', 'Eau de rose'],
+      allergens: ['Œufs', 'Lactose', 'Fruits à coque']
     }
+  ];
 
-    /* -----------------------------------------------
-       OUVRIR LE DÉTAIL D'UN PLAT
-       card : l'élément .dish-card cliqué
-    ----------------------------------------------- */
-    function openDish(card) {
-      // Récupérer les données depuis les attributs data-*
-      currentDish = {
-        id:    card.dataset.id,
-        name:  card.dataset.name,
-        price: parseFloat(card.dataset.price),
-        emoji: card.dataset.emoji,
-        desc:  card.dataset.desc
-      };
+  let currentFilter = 'tous';
 
-      // Remettre la quantité à 1 à chaque ouverture
-      currentQty = 1;
-      document.getElementById('qtyDisplay').textContent = 1;
+  function renderPlats(filter) {
+    const grid = document.getElementById('platsGrid');
+    const filtered = filter === 'tous' ? plats : plats.filter(p => p.categorie === filter);
+    grid.innerHTML = filtered.map(p => `
+      <div class="plat-card" onclick="openModal(${p.id})">
+        <span class="plat-emoji">${p.emoji}</span>
+        <div class="plat-info">
+          <p class="plat-categorie">${p.categorie}</p>
+          <h3 class="plat-nom">${p.nom}</h3>
+          <p class="plat-desc">${p.desc}</p>
+          <div class="plat-footer">
+            <span class="plat-prix">${p.prix}</span>
+            <span class="plat-voir">Voir la composition →</span>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
 
-      // Remplir le panneau avec les infos du plat
-      document.getElementById('detailEmoji').textContent = currentDish.emoji;
-      document.getElementById('detailName').textContent  = currentDish.name;
-      document.getElementById('detailDesc').textContent  = currentDish.desc;
-      document.getElementById('detailPrice').textContent = formatPrice(currentDish.price);
+  function filterPlats(cat) {
+    currentFilter = cat;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+    renderPlats(cat);
+  }
 
-      // Ouvrir l'overlay
-      document.getElementById('dishOverlay').classList.add('open');
+  renderPlats('tous');
+
+  // ---- MODAL ----
+  function openModal(id) {
+    const p = plats.find(x => x.id === id);
+    document.getElementById('modalEmoji').textContent = p.emoji;
+    document.getElementById('modalCat').textContent = p.categorie.toUpperCase();
+    document.getElementById('modalNom').textContent = p.nom;
+    document.getElementById('modalPrix').textContent = p.prix;
+    document.getElementById('modalIngredients').innerHTML =
+      p.ingredients.map(i => `<div class="ingredient">${i}</div>`).join('');
+    document.getElementById('modalAllergens').innerHTML =
+      p.allergens.map(a => `<span class="allergen">${a}</span>`).join('');
+    document.getElementById('modalOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal(e) {
+    if (!e || e.target === document.getElementById('modalOverlay') || e.type === 'click' && !e.target.closest('.modal')) {
+      document.getElementById('modalOverlay').classList.remove('open');
+      document.body.style.overflow = '';
     }
+  }
 
-    /* -----------------------------------------------
-       FERMER L'OVERLAY (bouton ✕)
-    ----------------------------------------------- */
-    function closeDetail() {
-      document.getElementById('dishOverlay').classList.remove('open');
-      currentDish = null;
-    }
-
-    /* -----------------------------------------------
-       FERMER L'OVERLAY EN CLIQUANT SUR LE FOND NOIR
-    ----------------------------------------------- */
-    function closeDishOnBg(event) {
-      // Ne ferme que si on clique sur le fond, pas sur le panneau
-      if (event.target === document.getElementById('dishOverlay')) {
-        closeDetail();
-      }
-    }
-
-    /* -----------------------------------------------
-       CHANGER LA QUANTITÉ DANS L'OVERLAY
-       delta : +1 ou -1
-    ----------------------------------------------- */
-    function changeQty(delta) {
-      currentQty = Math.max(1, currentQty + delta); // Minimum 1
-      document.getElementById('qtyDisplay').textContent = currentQty;
-    }
-
-    /* -----------------------------------------------
-       AJOUTER AU PANIER
-       Ajoute currentDish × currentQty dans le panier
-    ----------------------------------------------- */
-    function addToCart() {
-      if (!currentDish) return;
-
-      const id = currentDish.id;
-
-      if (cart[id]) {
-        // Si le plat est déjà dans le panier, augmenter la quantité
-        cart[id].qty += currentQty;
-      } else {
-        // Sinon, créer une nouvelle entrée
-        cart[id] = {
-          name:  currentDish.name,
-          price: currentDish.price,
-          emoji: currentDish.emoji,
-          qty:   currentQty
-        };
-      }
-
-      // Mettre à jour l'affichage du panier et du badge
-      renderCart();
-      closeDetail();
-      showToast('✓ ' + currentDish.name + ' ajouté !');
-    }
-
-    /* -----------------------------------------------
-       AFFICHER / MASQUER LE PANIER
-    ----------------------------------------------- */
-    function toggleCart() {
-      document.getElementById('cartDrawer').classList.toggle('open');
-    }
-
-    /* -----------------------------------------------
-       METTRE À JOUR L'AFFICHAGE DU PANIER
-       Recalcule et réaffiche tous les articles
-    ----------------------------------------------- */
-    function renderCart() {
-      const container = document.getElementById('cartItems');
-      const ids = Object.keys(cart);
-
-      if (ids.length === 0) {
-        // Panier vide
-        container.innerHTML = `
-          <div class="empty-cart">
-            <span class="icon">🍽️</span>
-            Votre panier est vide.<br>Ajoutez des plats depuis la carte !
-          </div>`;
-        document.getElementById('cartTotal').textContent = '0,00 €';
-        updateBadge(0);
-        return;
-      }
-
-      // Construire le HTML de chaque article
-      let html  = '';
-      let total = 0;
-      let totalQty = 0;
-
-      ids.forEach(id => {
-        const item = cart[id];
-        const subtotal = item.price * item.qty;
-        total    += subtotal;
-        totalQty += item.qty;
-
-        html += `
-          <div class="cart-item">
-            <span class="cart-item-emoji">${item.emoji}</span>
-            <div class="cart-item-info">
-              <p class="cart-item-name">${item.name}</p>
-              <p class="cart-item-price">${formatPrice(subtotal)}</p>
-            </div>
-            <div class="cart-item-controls">
-              <!-- Diminuer la quantité (supprime si 0) -->
-              <button class="cart-qty-btn" onclick="updateCartQty('${id}', -1)">−</button>
-              <span class="cart-item-qty">${item.qty}</span>
-              <!-- Augmenter la quantité -->
-              <button class="cart-qty-btn" onclick="updateCartQty('${id}', +1)">+</button>
-            </div>
-          </div>`;
-      });
-
-      container.innerHTML = html;
-      document.getElementById('cartTotal').textContent = formatPrice(total);
-      updateBadge(totalQty);
-    }
-
-    /* -----------------------------------------------
-       MODIFIER LA QUANTITÉ D'UN ARTICLE DANS LE PANIER
-       id : identifiant du plat | delta : +1 ou -1
-    ----------------------------------------------- */
-    function updateCartQty(id, delta) {
-      if (!cart[id]) return;
-      cart[id].qty += delta;
-
-      if (cart[id].qty <= 0) {
-        // Supprimer l'article si quantité = 0
-        delete cart[id];
-      }
-
-      renderCart();
-    }
-
-    /* -----------------------------------------------
-       METTRE À JOUR LE BADGE DU BOUTON PANIER
-    ----------------------------------------------- */
-    function updateBadge(count) {
-      const badge = document.getElementById('cartBadge');
-      if (count > 0) {
-        badge.textContent = count;
-        badge.style.display = 'flex';
-      } else {
-        badge.style.display = 'none';
-      }
-    }
-
-    /* -----------------------------------------------
-       FORMATER UN PRIX EN EUROS
-       Ex : 12.5 → "12,50 €"
-    ----------------------------------------------- */
-    function formatPrice(amount) {
-      return amount.toFixed(2).replace('.', ',') + ' €';
-    }
-
-    /* -----------------------------------------------
-       AFFICHER UN TOAST (notification temporaire)
-       msg : texte à afficher | durée : 2 secondes
-    ----------------------------------------------- */
-    function showToast(msg) {
-      const toast = document.getElementById('toast');
-      toast.textContent = msg;
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 2000);
-    }
-
-    /* -----------------------------------------------
-       GÉRER LE PAIEMENT
-       → Remplacez ce bloc par votre intégration Stripe,
-         PayPal ou autre solution de paiement
-    ----------------------------------------------- */
-    function handlePayment() {
-      const ids = Object.keys(cart);
-      if (ids.length === 0) {
-        showToast('⚠️ Votre panier est vide');
-        return;
-      }
-      // ICI : intégrez votre système de paiement
-      // Ex : window.location.href = '/checkout';
-      alert('🎉 Commande confirmée ! Merci pour votre achat.\n(Intégrez votre solution de paiement ici)');
-      cart = {};
-      renderCart();
-      toggleCart();
-    }
-
-  </script>
-
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModal({target: document.getElementById('modalOverlay')});
+  });
+</script>
 </body>
 </html>
