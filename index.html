@@ -1,131 +1,1328 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant Gourmet</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            scroll-behavior: smooth;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>La Maison du Chef</title>
 
-        header {
-            background: #111;
-            color: white;
-            padding: 20px;
-            position: fixed;
-            width: 100%;
-            top: 0;
-        }
+  <!-- ===================================================
+       POLICES GOOGLE FONTS
+       - Playfair Display : titres élégants du restaurant
+       - Lato : texte courant lisible
+  =================================================== -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 
-        nav a {
-            color: white;
-            margin: 0 15px;
-            text-decoration: none;
-        }
+  <style>
+    /* ===================================================
+       VARIABLES CSS GLOBALES
+       Modifiez ici les couleurs et polices du site entier
+    =================================================== */
+    :root {
+      --couleur-fond:       #0f0e0b;      /* Fond général très sombre */
+      --couleur-surface:    #1a1814;      /* Fond des cartes et sections */
+      --couleur-or:         #c9a84c;      /* Or chaud – couleur principale */
+      --couleur-or-clair:   #e8cc7a;      /* Or clair pour hovers */
+      --couleur-texte:      #f0ead8;      /* Texte principal crème */
+      --couleur-texte-dim:  #9a9282;      /* Texte secondaire grisé */
+      --couleur-rouge:      #c0392b;      /* Rouge alerte / supprimer */
+      --police-titre:       'Playfair Display', serif;
+      --police-corps:       'Lato', sans-serif;
+      --rayon:              12px;         /* Rayon d'arrondi des cartes */
+      --ombre:              0 8px 32px rgba(0,0,0,0.5); /* Ombre portée */
+    }
 
-        section {
-            padding: 100px 20px;
-            min-height: 100vh;
-        }
+    /* ===================================================
+       RESET & BASE
+       Supprime les marges par défaut du navigateur
+    =================================================== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .hero {
-            background: url('https://images.unsplash.com/photo-1555992336-03a23c2a8c36') center/cover;
-            color: white;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-        }
+    body {
+      font-family: var(--police-corps);
+      background: var(--couleur-fond);
+      color: var(--couleur-texte);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
 
-        .chef, .plats, .contact {
-            max-width: 1000px;
-            margin: auto;
-        }
+    /* ===================================================
+       BARRE DE NAVIGATION
+       Fixée en haut – contient logo + liens + panier
+    =================================================== */
+    nav {
+      position: fixed;           /* Reste en haut même en scrollant */
+      top: 0; left: 0; right: 0;
+      z-index: 1000;             /* Au-dessus de tout le contenu */
+      background: rgba(15,14,11,0.92);
+      backdrop-filter: blur(12px); /* Flou derrière la barre */
+      border-bottom: 1px solid rgba(201,168,76,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      height: 68px;
+    }
 
-        .plats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-        }
+    /* Nom du restaurant dans la nav */
+    .nav-logo {
+      font-family: var(--police-titre);
+      font-size: 1.4rem;
+      color: var(--couleur-or);
+      letter-spacing: 0.05em;
+      cursor: pointer;
+    }
 
-        .card {
-            border: 1px solid #ddd;
-            padding: 15px;
-            border-radius: 10px;
-        }
+    /* Liens HOME / CARTE / CONTACT */
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
 
-        footer {
-            background: #111;
-            color: white;
-            text-align: center;
-            padding: 20px;
-        }
-    </style>
+    .nav-links a {
+      color: var(--couleur-texte-dim);
+      text-decoration: none;
+      font-size: 0.85rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-weight: 700;
+      transition: color 0.2s;
+      cursor: pointer;
+    }
+
+    /* Lien actif / survolé */
+    .nav-links a:hover,
+    .nav-links a.active { color: var(--couleur-or); }
+
+    /* Bouton panier en haut à droite */
+    .cart-btn {
+      position: relative;
+      background: none;
+      border: 1px solid var(--couleur-or);
+      color: var(--couleur-or);
+      padding: 0.5rem 1.1rem;
+      border-radius: 50px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.2s, color 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: var(--police-corps);
+    }
+
+    .cart-btn:hover {
+      background: var(--couleur-or);
+      color: var(--couleur-fond);
+    }
+
+    /* Badge rouge avec le nombre d'articles dans le panier */
+    .cart-badge {
+      position: absolute;
+      top: -6px; right: -6px;
+      background: var(--couleur-rouge);
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 700;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      /* Masqué si panier vide */
+    }
+
+    /* ===================================================
+       PAGES (sections)
+       Chaque page est une section pleine hauteur
+       On cache tout sauf la page active
+    =================================================== */
+    .page {
+      display: none;           /* Cachée par défaut */
+      padding-top: 68px;       /* Espace pour la nav fixe */
+      min-height: 100vh;
+    }
+
+    .page.active { display: block; } /* Affichée si active */
+
+    /* ===================================================
+       PAGE HOME – HÉRO
+       Grande bannière avec présentation du chef
+    =================================================== */
+    .hero {
+      min-height: calc(100vh - 68px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Texture de fond dorée en arrière-plan */
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 60% 50%, rgba(201,168,76,0.08) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 40% at 20% 80%, rgba(201,168,76,0.05) 0%, transparent 60%);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 5rem;
+      max-width: 1100px;
+      width: 100%;
+      padding: 3rem 2rem;
+    }
+
+    /* ---------------------------------------------------
+       ZONE PHOTO DU CHEF
+       Remplacez l'image par votre photo dans img src=""
+    --------------------------------------------------- */
+    .chef-photo-wrap {
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    /* Cadre décoratif doré autour de la photo */
+    .chef-photo-wrap::before {
+      content: '';
+      position: absolute;
+      top: -12px; left: -12px;
+      right: 12px; bottom: 12px;
+      border: 2px solid var(--couleur-or);
+      border-radius: var(--rayon);
+      opacity: 0.5;
+    }
+
+    .chef-photo {
+      width: 320px;
+      height: 420px;
+      object-fit: cover;          /* Recadre l'image pour remplir le cadre */
+      border-radius: var(--rayon);
+      display: block;
+      background: var(--couleur-surface); /* Fond si pas d'image */
+      /* ↓ REMPLACEZ src="" par le chemin de votre photo */
+    }
+
+    /* Placeholder si pas d'image – icône chef */
+    .chef-placeholder {
+      width: 320px;
+      height: 420px;
+      background: var(--couleur-surface);
+      border-radius: var(--rayon);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      border: 2px dashed rgba(201,168,76,0.3);
+      color: var(--couleur-texte-dim);
+      font-size: 0.85rem;
+      text-align: center;
+    }
+
+    .chef-placeholder .icon { font-size: 4rem; }
+
+    /* ---------------------------------------------------
+       TEXTE DE PRÉSENTATION DU CHEF (à droite)
+    --------------------------------------------------- */
+    .hero-text { flex: 1; }
+
+    /* Petit label au-dessus du titre */
+    .hero-label {
+      font-size: 0.75rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--couleur-or);
+      margin-bottom: 1rem;
+    }
+
+    /* NOM DU RESTAURANT – grand titre principal */
+    .hero-title {
+      font-family: var(--police-titre);
+      font-size: clamp(2.5rem, 5vw, 4rem); /* Taille responsive */
+      line-height: 1.1;
+      color: var(--couleur-texte);
+      margin-bottom: 1.5rem;
+    }
+
+    .hero-title em {
+      color: var(--couleur-or);
+      font-style: italic;
+    }
+
+    /* Séparateur doré sous le titre */
+    .divider {
+      width: 60px;
+      height: 2px;
+      background: var(--couleur-or);
+      margin-bottom: 1.5rem;
+    }
+
+    /* Texte de présentation du chef */
+    .hero-desc {
+      color: var(--couleur-texte-dim);
+      line-height: 1.8;
+      font-size: 1rem;
+      max-width: 480px;
+      margin-bottom: 1.5rem;
+    }
+
+    /* NOM DU CHEF affiché en signature */
+    .chef-name {
+      font-family: var(--police-titre);
+      font-size: 1.3rem;
+      color: var(--couleur-or);
+      font-style: italic;
+    }
+
+    /* ===================================================
+       PAGE CARTE – GRILLE DE PLATS
+    =================================================== */
+    .carte-section {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+    }
+
+    /* Titre de section centré */
+    .section-title {
+      font-family: var(--police-titre);
+      font-size: 2.2rem;
+      color: var(--couleur-texte);
+      text-align: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .section-subtitle {
+      text-align: center;
+      color: var(--couleur-texte-dim);
+      font-size: 0.9rem;
+      letter-spacing: 0.1em;
+      margin-bottom: 3rem;
+    }
+
+    /* Grille responsive : 3 colonnes sur grand écran */
+    .dishes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    /* ---------------------------------------------------
+       CARTE D'UN PLAT
+       Cliquer dessus ouvre le panneau de détail
+    --------------------------------------------------- */
+    .dish-card {
+      background: var(--couleur-surface);
+      border-radius: var(--rayon);
+      overflow: hidden;
+      cursor: pointer;                    /* Indique que c'est cliquable */
+      border: 1px solid rgba(201,168,76,0.1);
+      transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+      box-shadow: var(--ombre);
+    }
+
+    .dish-card:hover {
+      transform: translateY(-6px);        /* Monte au survol */
+      box-shadow: 0 16px 48px rgba(0,0,0,0.6);
+      border-color: rgba(201,168,76,0.4);
+    }
+
+    /* Zone image du plat */
+    .dish-img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      display: block;
+      background: #2a2820;
+    }
+
+    /* Placeholder si pas d'image pour le plat */
+    .dish-img-placeholder {
+      width: 100%;
+      height: 200px;
+      background: #2a2820;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3.5rem;
+    }
+
+    /* Infos sous l'image */
+    .dish-info { padding: 1.2rem; }
+
+    .dish-name {
+      font-family: var(--police-titre);
+      font-size: 1.2rem;
+      color: var(--couleur-texte);
+      margin-bottom: 0.4rem;
+    }
+
+    .dish-desc {
+      color: var(--couleur-texte-dim);
+      font-size: 0.85rem;
+      line-height: 1.5;
+      margin-bottom: 0.8rem;
+    }
+
+    /* Prix en bas de la carte */
+    .dish-price {
+      color: var(--couleur-or);
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    /* ===================================================
+       PANNEAU DE DÉTAIL D'UN PLAT (overlay)
+       S'affiche quand on clique sur une carte
+    =================================================== */
+    .overlay {
+      display: none;             /* Caché par défaut */
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(4px);
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .overlay.open { display: flex; } /* Visible quand .open est ajouté */
+
+    /* Contenu du panneau */
+    .detail-panel {
+      background: var(--couleur-surface);
+      border-radius: var(--rayon);
+      border: 1px solid rgba(201,168,76,0.3);
+      max-width: 800px;
+      width: 100%;
+      display: flex;
+      gap: 0;
+      overflow: hidden;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.8);
+      animation: slideUp 0.3s ease; /* Animation d'apparition */
+    }
+
+    /* Animation glissement vers le haut */
+    @keyframes slideUp {
+      from { transform: translateY(30px); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+
+    /* Image à gauche du panneau */
+    .detail-img {
+      width: 350px;
+      flex-shrink: 0;
+      object-fit: cover;
+      display: block;
+      background: #2a2820;
+    }
+
+    .detail-img-placeholder {
+      width: 350px;
+      flex-shrink: 0;
+      background: #2a2820;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 5rem;
+    }
+
+    /* Zone de droite : infos + ajout panier */
+    .detail-body {
+      flex: 1;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Bouton fermer (×) */
+    .close-btn {
+      align-self: flex-end;
+      background: none;
+      border: none;
+      color: var(--couleur-texte-dim);
+      font-size: 1.5rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0;
+      margin-bottom: 1rem;
+      transition: color 0.2s;
+    }
+
+    .close-btn:hover { color: var(--couleur-texte); }
+
+    .detail-name {
+      font-family: var(--police-titre);
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .detail-desc {
+      color: var(--couleur-texte-dim);
+      font-size: 0.95rem;
+      line-height: 1.7;
+      flex: 1;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Prix dans le détail */
+    .detail-price {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--couleur-or);
+      margin-bottom: 1.5rem;
+    }
+
+    /* ---------------------------------------------------
+       SÉLECTEUR DE QUANTITÉ + BOUTON AJOUTER AU PANIER
+    --------------------------------------------------- */
+    .qty-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    /* Boutons – et + pour changer la quantité */
+    .qty-btn {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--couleur-or);
+      background: none;
+      color: var(--couleur-or);
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .qty-btn:hover {
+      background: var(--couleur-or);
+      color: var(--couleur-fond);
+    }
+
+    /* Affichage du nombre */
+    .qty-display {
+      font-size: 1.3rem;
+      font-weight: 700;
+      min-width: 30px;
+      text-align: center;
+    }
+
+    /* Bouton principal "Ajouter au panier" */
+    .add-btn {
+      width: 100%;
+      padding: 0.85rem;
+      background: var(--couleur-or);
+      color: var(--couleur-fond);
+      border: none;
+      border-radius: 8px;
+      font-family: var(--police-corps);
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .add-btn:hover { background: var(--couleur-or-clair); }
+    .add-btn:active { transform: scale(0.98); }
+
+    /* ===================================================
+       PANNEAU PANIER (drawer depuis la droite)
+    =================================================== */
+    .cart-drawer {
+      display: none;
+      position: fixed;
+      top: 0; right: 0;
+      width: 420px;
+      max-width: 100vw;
+      height: 100vh;
+      z-index: 3000;
+      background: var(--couleur-surface);
+      border-left: 1px solid rgba(201,168,76,0.2);
+      flex-direction: column;
+      box-shadow: -8px 0 40px rgba(0,0,0,0.6);
+      animation: slideIn 0.3s ease;
+    }
+
+    .cart-drawer.open { display: flex; }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); }
+      to   { transform: translateX(0); }
+    }
+
+    /* En-tête du panier */
+    .cart-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.5rem;
+      border-bottom: 1px solid rgba(201,168,76,0.15);
+    }
+
+    .cart-header h2 {
+      font-family: var(--police-titre);
+      font-size: 1.5rem;
+      color: var(--couleur-or);
+    }
+
+    /* Liste des articles du panier (scrollable) */
+    .cart-items {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+    }
+
+    /* Un article dans le panier */
+    .cart-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.8rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .cart-item-emoji { font-size: 2rem; }
+
+    .cart-item-info { flex: 1; }
+
+    .cart-item-name {
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin-bottom: 0.2rem;
+    }
+
+    .cart-item-price {
+      color: var(--couleur-or);
+      font-size: 0.85rem;
+    }
+
+    /* Contrôles de quantité dans le panier */
+    .cart-item-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .cart-qty-btn {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: 1px solid rgba(201,168,76,0.4);
+      background: none;
+      color: var(--couleur-or);
+      cursor: pointer;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+
+    .cart-qty-btn:hover {
+      background: rgba(201,168,76,0.15);
+    }
+
+    .cart-item-qty { font-size: 0.95rem; min-width: 20px; text-align: center; }
+
+    /* Bas du panier : total + bouton payer */
+    .cart-footer {
+      padding: 1.5rem;
+      border-top: 1px solid rgba(201,168,76,0.15);
+    }
+
+    .cart-total {
+      display: flex;
+      justify-content: space-between;
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: var(--couleur-texte);
+    }
+
+    .cart-total span { color: var(--couleur-or); }
+
+    /* Bouton payer */
+    .pay-btn {
+      width: 100%;
+      padding: 1rem;
+      background: linear-gradient(135deg, var(--couleur-or), var(--couleur-or-clair));
+      color: var(--couleur-fond);
+      border: none;
+      border-radius: 8px;
+      font-family: var(--police-corps);
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    .pay-btn:hover { opacity: 0.9; }
+    .pay-btn:active { transform: scale(0.98); }
+
+    /* Message panier vide */
+    .empty-cart {
+      text-align: center;
+      color: var(--couleur-texte-dim);
+      padding: 3rem 1rem;
+      font-size: 0.95rem;
+    }
+
+    .empty-cart .icon { font-size: 3rem; display: block; margin-bottom: 1rem; }
+
+    /* ===================================================
+       PAGE CONTACT
+    =================================================== */
+    .contact-section {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 4rem 2rem;
+      text-align: center;
+    }
+
+    /* Icônes de contact (email, Instagram) */
+    .contact-links {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      margin-top: 3rem;
+      align-items: center;
+    }
+
+    /* Chaque lien de contact */
+    .contact-link {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      background: var(--couleur-surface);
+      border: 1px solid rgba(201,168,76,0.2);
+      border-radius: var(--rayon);
+      padding: 1.2rem 2rem;
+      width: 100%;
+      max-width: 400px;
+      cursor: pointer;
+      text-decoration: none;
+      color: var(--couleur-texte);
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .contact-link:hover {
+      border-color: var(--couleur-or);
+      transform: translateX(4px);
+    }
+
+    .contact-link .contact-icon { font-size: 1.8rem; }
+
+    .contact-link-info { text-align: left; }
+
+    .contact-link-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--couleur-texte-dim);
+      margin-bottom: 0.3rem;
+    }
+
+    /* ---------------------------------------------------
+       VALEUR À MODIFIER : votre email et Instagram
+       Cherchez "votre@email.com" et "@votre_instagram"
+    --------------------------------------------------- */
+    .contact-link-value {
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--couleur-or);
+    }
+
+    /* ===================================================
+       TOAST DE NOTIFICATION
+       Apparaît brièvement quand on ajoute au panier
+    =================================================== */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--couleur-or);
+      color: var(--couleur-fond);
+      padding: 0.8rem 1.8rem;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      z-index: 9999;
+      transition: transform 0.3s ease;
+      white-space: nowrap;
+    }
+
+    /* Visible quand .show est ajouté */
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ===================================================
+       RESPONSIVE – Mobile
+    =================================================== */
+    @media (max-width: 768px) {
+      .hero-content { flex-direction: column; gap: 2rem; text-align: center; }
+      .divider { margin: 1rem auto; }
+      .hero-desc { max-width: 100%; }
+      .chef-placeholder, .chef-photo { width: 260px; height: 320px; }
+      .detail-panel { flex-direction: column; }
+      .detail-img, .detail-img-placeholder { width: 100%; height: 220px; }
+      .nav-links { gap: 1.2rem; }
+    }
+  </style>
 </head>
 <body>
 
-<header>
-    <nav>
-        <a href="#home">Accueil</a>
-        <a href="#chef">Le Chef</a>
-        <a href="#plats">Nos Plats</a>
-        <a href="#contact">Contact</a>
-    </nav>
-</header>
+  <!-- ===================================================
+       BARRE DE NAVIGATION FIXE
+  =================================================== -->
+  <nav>
+    <!-- NOM DU SITE : modifiez le texte ici -->
+    <div class="nav-logo" onclick="showPage('home')">La Maison du Chef</div>
 
-<section id="home" class="hero">
-    <h1>Bienvenue dans notre restaurant</h1>
-    <p>Une expérience gastronomique unique</p>
-</section>
+    <!-- LIENS DE NAVIGATION -->
+    <ul class="nav-links">
+      <li><a onclick="showPage('home')"    id="link-home"    class="active">Home</a></li>
+      <li><a onclick="showPage('carte')"   id="link-carte">Carte</a></li>
+      <li><a onclick="showPage('contact')" id="link-contact">Contact</a></li>
+    </ul>
 
-<section id="chef">
-    <div class="chef">
-        <h2>Présentation du Chef</h2>
-        <p>Notre chef est passionné par la cuisine depuis plus de 20 ans. Il mélange tradition et modernité pour créer des plats uniques.</p>
-        <p>Formé dans les plus grandes écoles culinaires, il apporte une touche artistique à chaque assiette.</p>
-    </div>
-</section>
+    <!-- BOUTON PANIER (haut droite) -->
+    <button class="cart-btn" onclick="toggleCart()">
+      🛒 Panier
+      <!-- Badge avec le nombre d'articles total -->
+      <span class="cart-badge" id="cartBadge" style="display:none">0</span>
+    </button>
+  </nav>
 
-<section id="plats">
-    <div class="plats">
-        <h2>Présentation des Plats</h2>
-        <div class="plats-grid">
-            <div class="card">
-                <h3>Plat 1</h3>
-                <p>Description du plat délicieux avec des ingrédients frais.</p>
-            </div>
-            <div class="card">
-                <h3>Plat 2</h3>
-                <p>Un mélange parfait de saveurs et de textures.</p>
-            </div>
-            <div class="card">
-                <h3>Plat 3</h3>
-                <p>Une spécialité du chef à ne pas manquer.</p>
-            </div>
-            <div class="card">
-                <h3>Plat 4</h3>
-                <p>Une explosion de goûts en bouche.</p>
-            </div>
+
+  <!-- ===================================================
+       PAGE : HOME
+       Présentation du chef + nom du restaurant
+  =================================================== -->
+  <section class="page active" id="page-home">
+    <div class="hero">
+      <div class="hero-content">
+
+        <!-- PHOTO DU CHEF
+             → Remplacez la div.chef-placeholder par :
+               <img src="votre-photo.jpg" class="chef-photo" alt="Chef">
+        -->
+        <div class="chef-photo-wrap">
+          <div class="chef-placeholder">
+            <span class="icon">👨‍🍳</span>
+            <span>Votre photo<br>ici</span>
+          </div>
         </div>
-    </div>
-</section>
 
-<section id="contact">
-    <div class="contact">
-        <h2>Contact</h2>
-        <p>Email : contact@restaurant.com</p>
-        <p>Téléphone : 01 23 45 67 89</p>
-        <p>Adresse : 123 Rue de la Gastronomie</p>
-    </div>
-</section>
+        <!-- TEXTE DE PRÉSENTATION -->
+        <div class="hero-text">
+          <p class="hero-label">Bienvenue dans notre univers</p>
 
-<footer>
-    <p>© 2026 Restaurant Gourmet</p>
-</footer>
+          <!-- NOM DU RESTAURANT : modifiez ici -->
+          <h1 class="hero-title">La Maison<br>du <em>Chef</em></h1>
+
+          <div class="divider"></div>
+
+          <!-- PRÉSENTATION DU CHEF : modifiez ce texte -->
+          <p class="hero-desc">
+            Passionné depuis l'enfance par les saveurs authentiques, le Chef
+            Jean-Pierre vous invite à découvrir une cuisine du terroir revisitée
+            avec audace. Chaque assiette raconte une histoire, chaque bouchée
+            est une émotion. Bienvenue à la table que je vous ai préparée.
+          </p>
+
+          <!-- NOM DU CHEF : modifiez ici -->
+          <p class="chef-name">— Chef Jean-Pierre Martin</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===================================================
+       PAGE : CARTE
+       Grille de plats cliquables
+  =================================================== -->
+  <section class="page" id="page-carte">
+    <div class="carte-section">
+      <h2 class="section-title">Notre Carte</h2>
+      <p class="section-subtitle">Cliquez sur un plat pour le découvrir et l'ajouter à votre panier</p>
+
+      <!-- GRILLE DES PLATS
+           Pour ajouter un plat : dupliquez un bloc .dish-card
+           et modifiez : data-id (unique), data-name, data-price,
+           data-desc, data-emoji
+      -->
+      <div class="dishes-grid" id="dishesGrid">
+
+        <!-- ---- PLAT 1 ---- -->
+        <div class="dish-card"
+             data-id="1"
+             data-name="Soupe à l'Oignon"
+             data-price="12"
+             data-desc="Notre soupe à l'oignon gratinée, mijotée longuement avec un bouillon de bœuf corsé, servie avec des croûtons au fromage comté fondant."
+             data-emoji="🧅"
+             onclick="openDish(this)">
+          <!-- Image du plat : remplacez par <img src="..." class="dish-img"> -->
+          <div class="dish-img-placeholder">🧅</div>
+          <div class="dish-info">
+            <h3 class="dish-name">Soupe à l'Oignon</h3>
+            <p class="dish-desc">Gratinée, bouillon de bœuf, comté</p>
+            <p class="dish-price">12,00 €</p>
+          </div>
+        </div>
+
+        <!-- ---- PLAT 2 ---- -->
+        <div class="dish-card"
+             data-id="2"
+             data-name="Magret de Canard"
+             data-price="24"
+             data-desc="Magret de canard rosé, sauce aux cerises et au miel, accompagné d'un gratin dauphinois crémeux et de haricots verts croquants."
+             data-emoji="🦆"
+             onclick="openDish(this)">
+          <div class="dish-img-placeholder">🦆</div>
+          <div class="dish-info">
+            <h3 class="dish-name">Magret de Canard</h3>
+            <p class="dish-desc">Sauce cerise-miel, gratin dauphinois</p>
+            <p class="dish-price">24,00 €</p>
+          </div>
+        </div>
+
+        <!-- ---- PLAT 3 ---- -->
+        <div class="dish-card"
+             data-id="3"
+             data-name="Crème Brûlée"
+             data-price="9"
+             data-desc="La classique crème brûlée à la vanille de Madagascar, caramélisée à la minute, accompagnée de ses petits sablés bretons maison."
+             data-emoji="🍮"
+             onclick="openDish(this)">
+          <div class="dish-img-placeholder">🍮</div>
+          <div class="dish-info">
+            <h3 class="dish-name">Crème Brûlée</h3>
+            <p class="dish-desc">Vanille Madagascar, sablés maison</p>
+            <p class="dish-price">9,00 €</p>
+          </div>
+        </div>
+
+        <!-- ---- PLAT 4 ---- -->
+        <div class="dish-card"
+             data-id="4"
+             data-name="Tartare de Saumon"
+             data-price="18"
+             data-desc="Saumon frais taillé au couteau, citron vert, aneth, câpres et avocat crémeux. Servi avec des toasts de pain noir croustillants."
+             data-emoji="🐟"
+             onclick="openDish(this)">
+          <div class="dish-img-placeholder">🐟</div>
+          <div class="dish-info">
+            <h3 class="dish-name">Tartare de Saumon</h3>
+            <p class="dish-desc">Citron vert, aneth, avocat, toasts</p>
+            <p class="dish-price">18,00 €</p>
+          </div>
+        </div>
+
+        <!-- ---- PLAT 5 ---- -->
+        <div class="dish-card"
+             data-id="5"
+             data-name="Risotto Truffe"
+             data-price="22"
+             data-desc="Risotto carnaroli mantecato, copeaux de truffe noire du Périgord, parmesan 24 mois affiné, huile de truffe et poivre long."
+             data-emoji="🍄"
+             onclick="openDish(this)">
+          <div class="dish-img-placeholder">🍄</div>
+          <div class="dish-info">
+            <h3 class="dish-name">Risotto Truffe</h3>
+            <p class="dish-desc">Truffe noire Périgord, parmesan 24 mois</p>
+            <p class="dish-price">22,00 €</p>
+          </div>
+        </div>
+
+        <!-- ---- PLAT 6 ---- -->
+        <div class="dish-card"
+             data-id="6"
+             data-name="Fondant Chocolat"
+             data-price="10"
+             data-desc="Fondant au chocolat Valrhona 70% avec un cœur coulant, servi tiède avec une quenelle de glace vanille et un coulis de caramel beurre salé."
+             data-emoji="🍫"
+             onclick="openDish(this)">
+          <div class="dish-img-placeholder">🍫</div>
+          <div class="dish-info">
+            <h3 class="dish-name">Fondant Chocolat</h3>
+            <p class="dish-desc">Valrhona 70%, cœur coulant, caramel</p>
+            <p class="dish-price">10,00 €</p>
+          </div>
+        </div>
+
+      </div><!-- fin .dishes-grid -->
+    </div>
+  </section>
+
+
+  <!-- ===================================================
+       PAGE : CONTACT
+       Email et Instagram du restaurant
+  =================================================== -->
+  <section class="page" id="page-contact">
+    <div class="contact-section">
+      <h2 class="section-title">Nous Contacter</h2>
+      <p class="section-subtitle">Réservations, questions, partenariats – nous sommes là</p>
+
+      <div class="contact-links">
+
+        <!-- LIEN EMAIL
+             → Modifiez href="mailto:..." et la valeur ci-dessous
+        -->
+        <a class="contact-link" href="mailto:votre@email.com">
+          <span class="contact-icon">✉️</span>
+          <div class="contact-link-info">
+            <p class="contact-link-label">Email</p>
+            <!-- MODIFIEZ VOTRE EMAIL ICI -->
+            <p class="contact-link-value">votre@email.com</p>
+          </div>
+        </a>
+
+        <!-- LIEN INSTAGRAM
+             → Modifiez href="https://instagram.com/..." et la valeur ci-dessous
+        -->
+        <a class="contact-link" href="https://instagram.com/votre_instagram" target="_blank">
+          <span class="contact-icon">📸</span>
+          <div class="contact-link-info">
+            <p class="contact-link-label">Instagram</p>
+            <!-- MODIFIEZ VOTRE INSTAGRAM ICI -->
+            <p class="contact-link-value">@votre_instagram</p>
+          </div>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===================================================
+       OVERLAY DÉTAIL D'UN PLAT
+       Apparaît au clic sur une carte de plat
+  =================================================== -->
+  <div class="overlay" id="dishOverlay" onclick="closeDishOnBg(event)">
+    <div class="detail-panel" id="detailPanel">
+
+      <!-- Image grande à gauche -->
+      <div class="detail-img-placeholder" id="detailEmoji">🍽️</div>
+
+      <!-- Infos + contrôles à droite -->
+      <div class="detail-body">
+        <button class="close-btn" onclick="closeDetail()">✕</button>
+        <h2 class="detail-name"  id="detailName">Nom du plat</h2>
+        <p class="detail-desc"   id="detailDesc">Description...</p>
+        <p class="detail-price"  id="detailPrice">0,00 €</p>
+
+        <!-- Sélecteur de quantité -->
+        <div class="qty-row">
+          <button class="qty-btn" onclick="changeQty(-1)">−</button>
+          <span class="qty-display" id="qtyDisplay">1</span>
+          <button class="qty-btn" onclick="changeQty(+1)">+</button>
+        </div>
+
+        <!-- Bouton ajouter au panier -->
+        <button class="add-btn" onclick="addToCart()">
+          Ajouter au panier
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ===================================================
+       DRAWER PANIER (depuis la droite)
+  =================================================== -->
+  <div class="cart-drawer" id="cartDrawer">
+    <div class="cart-header">
+      <h2>🛒 Mon Panier</h2>
+      <button class="close-btn" onclick="toggleCart()">✕</button>
+    </div>
+
+    <!-- Liste des articles -->
+    <div class="cart-items" id="cartItems">
+      <div class="empty-cart">
+        <span class="icon">🍽️</span>
+        Votre panier est vide.<br>Ajoutez des plats depuis la carte !
+      </div>
+    </div>
+
+    <!-- Total + paiement -->
+    <div class="cart-footer">
+      <div class="cart-total">
+        Total <span id="cartTotal">0,00 €</span>
+      </div>
+      <!-- BOUTON PAYER : connectez votre solution de paiement ici -->
+      <button class="pay-btn" onclick="handlePayment()">
+        💳 Payer ma commande
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ===================================================
+       TOAST DE NOTIFICATION
+  =================================================== -->
+  <div class="toast" id="toast">✓ Ajouté au panier !</div>
+
+
+  <!-- ===================================================
+       JAVASCRIPT – LOGIQUE DU SITE
+  =================================================== -->
+  <script>
+
+    /* -----------------------------------------------
+       ÉTAT GLOBAL
+       Toutes les données importantes du site
+    ----------------------------------------------- */
+    let cart         = {};     // Objet { dishId: { name, price, emoji, qty } }
+    let currentDish  = null;   // Plat actuellement affiché dans l'overlay
+    let currentQty   = 1;      // Quantité sélectionnée dans l'overlay
+
+    /* -----------------------------------------------
+       NAVIGATION ENTRE LES PAGES
+       Masque toutes les pages, affiche celle demandée
+    ----------------------------------------------- */
+    function showPage(pageName) {
+      // Masquer toutes les pages
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      // Afficher la page cible
+      document.getElementById('page-' + pageName).classList.add('active');
+
+      // Mettre à jour les liens actifs dans la nav
+      document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+      document.getElementById('link-' + pageName).classList.add('active');
+
+      // Remonter en haut de la page
+      window.scrollTo(0, 0);
+    }
+
+    /* -----------------------------------------------
+       OUVRIR LE DÉTAIL D'UN PLAT
+       card : l'élément .dish-card cliqué
+    ----------------------------------------------- */
+    function openDish(card) {
+      // Récupérer les données depuis les attributs data-*
+      currentDish = {
+        id:    card.dataset.id,
+        name:  card.dataset.name,
+        price: parseFloat(card.dataset.price),
+        emoji: card.dataset.emoji,
+        desc:  card.dataset.desc
+      };
+
+      // Remettre la quantité à 1 à chaque ouverture
+      currentQty = 1;
+      document.getElementById('qtyDisplay').textContent = 1;
+
+      // Remplir le panneau avec les infos du plat
+      document.getElementById('detailEmoji').textContent = currentDish.emoji;
+      document.getElementById('detailName').textContent  = currentDish.name;
+      document.getElementById('detailDesc').textContent  = currentDish.desc;
+      document.getElementById('detailPrice').textContent = formatPrice(currentDish.price);
+
+      // Ouvrir l'overlay
+      document.getElementById('dishOverlay').classList.add('open');
+    }
+
+    /* -----------------------------------------------
+       FERMER L'OVERLAY (bouton ✕)
+    ----------------------------------------------- */
+    function closeDetail() {
+      document.getElementById('dishOverlay').classList.remove('open');
+      currentDish = null;
+    }
+
+    /* -----------------------------------------------
+       FERMER L'OVERLAY EN CLIQUANT SUR LE FOND NOIR
+    ----------------------------------------------- */
+    function closeDishOnBg(event) {
+      // Ne ferme que si on clique sur le fond, pas sur le panneau
+      if (event.target === document.getElementById('dishOverlay')) {
+        closeDetail();
+      }
+    }
+
+    /* -----------------------------------------------
+       CHANGER LA QUANTITÉ DANS L'OVERLAY
+       delta : +1 ou -1
+    ----------------------------------------------- */
+    function changeQty(delta) {
+      currentQty = Math.max(1, currentQty + delta); // Minimum 1
+      document.getElementById('qtyDisplay').textContent = currentQty;
+    }
+
+    /* -----------------------------------------------
+       AJOUTER AU PANIER
+       Ajoute currentDish × currentQty dans le panier
+    ----------------------------------------------- */
+    function addToCart() {
+      if (!currentDish) return;
+
+      const id = currentDish.id;
+
+      if (cart[id]) {
+        // Si le plat est déjà dans le panier, augmenter la quantité
+        cart[id].qty += currentQty;
+      } else {
+        // Sinon, créer une nouvelle entrée
+        cart[id] = {
+          name:  currentDish.name,
+          price: currentDish.price,
+          emoji: currentDish.emoji,
+          qty:   currentQty
+        };
+      }
+
+      // Mettre à jour l'affichage du panier et du badge
+      renderCart();
+      closeDetail();
+      showToast('✓ ' + currentDish.name + ' ajouté !');
+    }
+
+    /* -----------------------------------------------
+       AFFICHER / MASQUER LE PANIER
+    ----------------------------------------------- */
+    function toggleCart() {
+      document.getElementById('cartDrawer').classList.toggle('open');
+    }
+
+    /* -----------------------------------------------
+       METTRE À JOUR L'AFFICHAGE DU PANIER
+       Recalcule et réaffiche tous les articles
+    ----------------------------------------------- */
+    function renderCart() {
+      const container = document.getElementById('cartItems');
+      const ids = Object.keys(cart);
+
+      if (ids.length === 0) {
+        // Panier vide
+        container.innerHTML = `
+          <div class="empty-cart">
+            <span class="icon">🍽️</span>
+            Votre panier est vide.<br>Ajoutez des plats depuis la carte !
+          </div>`;
+        document.getElementById('cartTotal').textContent = '0,00 €';
+        updateBadge(0);
+        return;
+      }
+
+      // Construire le HTML de chaque article
+      let html  = '';
+      let total = 0;
+      let totalQty = 0;
+
+      ids.forEach(id => {
+        const item = cart[id];
+        const subtotal = item.price * item.qty;
+        total    += subtotal;
+        totalQty += item.qty;
+
+        html += `
+          <div class="cart-item">
+            <span class="cart-item-emoji">${item.emoji}</span>
+            <div class="cart-item-info">
+              <p class="cart-item-name">${item.name}</p>
+              <p class="cart-item-price">${formatPrice(subtotal)}</p>
+            </div>
+            <div class="cart-item-controls">
+              <!-- Diminuer la quantité (supprime si 0) -->
+              <button class="cart-qty-btn" onclick="updateCartQty('${id}', -1)">−</button>
+              <span class="cart-item-qty">${item.qty}</span>
+              <!-- Augmenter la quantité -->
+              <button class="cart-qty-btn" onclick="updateCartQty('${id}', +1)">+</button>
+            </div>
+          </div>`;
+      });
+
+      container.innerHTML = html;
+      document.getElementById('cartTotal').textContent = formatPrice(total);
+      updateBadge(totalQty);
+    }
+
+    /* -----------------------------------------------
+       MODIFIER LA QUANTITÉ D'UN ARTICLE DANS LE PANIER
+       id : identifiant du plat | delta : +1 ou -1
+    ----------------------------------------------- */
+    function updateCartQty(id, delta) {
+      if (!cart[id]) return;
+      cart[id].qty += delta;
+
+      if (cart[id].qty <= 0) {
+        // Supprimer l'article si quantité = 0
+        delete cart[id];
+      }
+
+      renderCart();
+    }
+
+    /* -----------------------------------------------
+       METTRE À JOUR LE BADGE DU BOUTON PANIER
+    ----------------------------------------------- */
+    function updateBadge(count) {
+      const badge = document.getElementById('cartBadge');
+      if (count > 0) {
+        badge.textContent = count;
+        badge.style.display = 'flex';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+
+    /* -----------------------------------------------
+       FORMATER UN PRIX EN EUROS
+       Ex : 12.5 → "12,50 €"
+    ----------------------------------------------- */
+    function formatPrice(amount) {
+      return amount.toFixed(2).replace('.', ',') + ' €';
+    }
+
+    /* -----------------------------------------------
+       AFFICHER UN TOAST (notification temporaire)
+       msg : texte à afficher | durée : 2 secondes
+    ----------------------------------------------- */
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+
+    /* -----------------------------------------------
+       GÉRER LE PAIEMENT
+       → Remplacez ce bloc par votre intégration Stripe,
+         PayPal ou autre solution de paiement
+    ----------------------------------------------- */
+    function handlePayment() {
+      const ids = Object.keys(cart);
+      if (ids.length === 0) {
+        showToast('⚠️ Votre panier est vide');
+        return;
+      }
+      // ICI : intégrez votre système de paiement
+      // Ex : window.location.href = '/checkout';
+      alert('🎉 Commande confirmée ! Merci pour votre achat.\n(Intégrez votre solution de paiement ici)');
+      cart = {};
+      renderCart();
+      toggleCart();
+    }
+
+  </script>
 
 </body>
 </html>
